@@ -196,7 +196,7 @@ class Counting:
             ''' 
             TODO : create HSB and CMYK (maybe even RGB) objects based on the RGB values that are given here, and 
                     output it here w/ a toString() method, to clean the code a bit and finish a user story
-                    look up lib/colorsys object
+                    look up lib/colorsys object for HSV, not sure about CMYK yet
             '''
             for bead in self.colorBeads:
                 r = bead[0][0]
