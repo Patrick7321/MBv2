@@ -193,6 +193,10 @@ class Counting:
             colNames = ['Bead Number', 'Red Val', 'Green Val', 'Blue Val', 'X-Coord', 'Y-Coord', 'Radius']
             writer.writerow(colNames)
             i = 1
+            ''' 
+            TODO : create HSB and CMYK (maybe even RGB) objects based on the RGB values that are given here, and 
+                    output it here w/ a toString() method, to clean the code a bit and finish a user story
+            '''
             for bead in self.colorBeads:
                 r = bead[0][0]
                 g = bead[0][1]
