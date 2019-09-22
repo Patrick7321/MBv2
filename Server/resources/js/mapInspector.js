@@ -28,7 +28,7 @@ var imageObj = undefined; //the stitched map image
 
     /*
         a function to draw a bead
-        @param bead - the bead to be drawn. 
+        @param bead - the bead to be drawn.
         @param ctx - the context of the canvas.
     */
    var drawBead = function(bead,ctx) {
@@ -51,7 +51,7 @@ var imageObj = undefined; //the stitched map image
         @param x - the x position to check
         @param y - the y position to check
         @param cx - the circle x position
-        @param cy - the circle y position 
+        @param cy - the circle y position
         @param radius - the radius of the circle
     */
     var pointInCircle = function(x, y, cx, cy, radius) {
@@ -59,14 +59,14 @@ var imageObj = undefined; //the stitched map image
             dy = y - cy,
             dist = Math.sqrt(dx * dx + dy * dy);
         return dist < radius;
-        
+
         // var distsq = (x-cx)*(x-cx) + (y-cy)*(y-cy);
         // return distsq <= radius*radius;
     };
-    
+
     /*
-    a function to handle the hover over the canvas. 
-    @param clientX - the x position of the clients mouse. 
+    a function to handle the hover over the canvas.
+    @param clientX - the x position of the clients mouse.
     @param clientY - the y position of the clients mouse.
     @param ctx - the canvas context.
     */
@@ -94,24 +94,24 @@ var imageObj = undefined; //the stitched map image
             ctx.fillStyle = "black";
             ctx.font = "10pt sans-serif";
             var text = "RGB: ("+toolTipBead[0][0]+", "+toolTipBead[0][1]+", "+toolTipBead[0][2] + ")    isWater: "+toolTipBead[1];
-        
+
             ctx.fillText(text,rectX+10,rectY+(rectHeight/2),rectX+rectWidth);
         }
     };
 
     /*
         a function to translate a x/y value into a new height/width of a canvas.
-        @param coord - the coordinate to translate into a new range. 
+        @param coord - the coordinate to translate into a new range.
         @param oldRange - old height/width.
         @param newRange - new height/width.
     */
     var translateCoord = function(coord,oldRange,newRange) {
         return ((coord*newRange) / oldRange);
     };
-    
+
     /*
     a function used to translate the beads from the old image height/width to the new canvas height/width.
-    @param beadArray - the bead array to translate 
+    @param beadArray - the bead array to translate
     @param height - the new canvas height
     @param width - the new canvas width
     */
@@ -154,7 +154,7 @@ $(window).ready(function() {
     imageObj.src = mapLocation;
     ctx.canvas.width = width;
     ctx.canvas.height = height;
-    
+
     imageObj.onload = function() {
 
         ctx.drawImage(imageObj, 0, 0,width,height); //draw the image first

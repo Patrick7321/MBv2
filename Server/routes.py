@@ -75,14 +75,14 @@ def error():
     return render_template('error.html',error=errorMessage)
 
 @app.route('/uploadImages', methods=["POST"])
-def uploadImages(): 
+def uploadImages():
     images = request.files.getlist("images")
 
     newDir = setupUploadDir()
 
-    for i in images: 
+    for i in images:
         #redirect to error page if the image is in an unacceptable
-        if(isFileAllowed(i.filename,ALLOWED_IMAGE_EXTENSIONS) == False): 
+        if(isFileAllowed(i.filename,ALLOWED_IMAGE_EXTENSIONS) == False):
             return jsonify({"status": 1, "msg": "One or more of the images that were uploaded are in the incorrect format. Accepted formats: "+(", ".join(ALLOWED_IMAGE_EXTENSIONS))})
 
         print("Image is permitted: "+str(isFileAllowed(i.filename,ALLOWED_IMAGE_EXTENSIONS))) #see if the image format is allowed
@@ -90,11 +90,11 @@ def uploadImages():
 
         imgPath = newDir + "/images/" + str(secure_filename(i.filename))
         i.save(imgPath)
-    
+
     return jsonify({"status": 0, "msg": "Success","location": newDir.replace("Server/resources/uploads","")}) #redirect to homepage
 
 @app.route('/uploadVideo', methods=["POST"])
-def uploadVideo(): 
+def uploadVideo():
     video = request.files['video']
 
     newDir = setupUploadDir()
@@ -114,24 +114,25 @@ def uploadVideo():
 
 # accepts a path to the image directory to use for stitching
 @app.route('/getStitchedImage/<path:directory>')
-def getStitchedImage(directory): 
+def getStitchedImage(directory):
     dirPrefix="Server/resources/uploads/"
     stitcher = Stitching()
-    
+
     stitcher.twoRoundStitch(dirPrefix + directory + "/images/", dirPrefix + directory + "/maps/")
     return render_template('stitched.html', direct=directory)
 
 # accepts a path to the stitched image directory
 @app.route('/getResults/<path:directory>')
-def getResults(directory): 
+def getResults(directory):
     magLevel = request.args.get('magLevel')
     if(magLevel == "4x"):
         magLevel = HoughConfig.OBJX4
-    else: 
+    else:
         magLevel = HoughConfig.OBJX10
     resultsDirectory = directory.split("/")[0]
     serverDirectory = 'Server/resources/uploads/' + directory
     count = Counting(serverDirectory)
     circles = count.getColorBeads(magLevel)
     count.makeBeadsCSV()
-    return render_template('results.html',colorBeads=circles,waterBeads=count.waterBeads, mapLocation=directory, resultsDirectory=resultsDirectory) 
+    return render_template('results.html', colorBeads = circles, waterBeads = count.waterBeads,
+        crushedBeads = count.crushedBeads, mapLocation = directory, resultsDirectory = resultsDirectory)

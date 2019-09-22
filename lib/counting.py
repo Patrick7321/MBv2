@@ -27,6 +27,7 @@ SOFTWARE.
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+import imutils
 import random
 import math
 import itertools
@@ -37,39 +38,40 @@ from os import listdir, path
 """
     Description: an enum class to handle the HoughCircle configuration values that are used in cv2.HoughCircles().
 """
-class HoughConfig(Enum): 
+class HoughConfig(Enum):
 
-    # 4x magnification 
+    # 4x magnification
     OBJX4 = { "dp": 1,"minDist": 40,"param1": 50,"param2": 55,"minRadius": 0,"maxRadius": 75 }
 
-    # 10x magnification 
+    # 10x magnification
     OBJX10 = { "dp": 1,"minDist": 60,"param1": 65,"param2": 68,"minRadius": 0,"maxRadius": 125 }
 
 """
     Description: a class to deal with counting microbeads in a stitched image.
 """
-class Counting: 
+class Counting:
 
 
-    def __init__(self,imagePath):
+    def __init__(self, imagePath):
         self.imagePath = imagePath
         self.grayScaleMap = cv2.imread(imagePath,0) # create grayscale cv2 img
         self.colorMap = cv2.imread(imagePath) # create color cv2 img
         self.colorBeads = []
-        self.waterBeads = []        
+        self.waterBeads = []
+        self.crushedBeads = []
 
     """
         Description: a function that takes a map of images and counts the beads.
         @Param houghConfig - a HoughConfig object that contains the values for the HoughCircles() function
         @return an object containing information collected during the counting process.
     """
-    def getColorBeads(self,houghConfig):
+    def getColorBeads(self, houghConfig):
         houghConfig = houghConfig.value
         result = []
-        
+
         img = self.grayScaleMap
         cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
-        blur = cv2.GaussianBlur(img,(5,5),0)
+        blur = cv2.GaussianBlur(img,(7,7),0)
         circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,dp=houghConfig["dp"],minDist=houghConfig["minDist"],
                             param1=houghConfig["param1"],param2=houghConfig["param2"],minRadius=houghConfig["minRadius"],maxRadius=houghConfig["maxRadius"])
 
@@ -85,35 +87,71 @@ class Counting:
             if(color[1] == False): # if the bead is a water bead, leave it out.
                 self.colorBeads.append(color)
                 result.append(color)
-            else: 
+            else:
                 self.waterBeads.append(color)
+
+        self.getCrushedBeads(img, circles)
+
         imagePath = '/'.join(self.imagePath.split('/')[:-2]) + '/results/'
         imagePath += 'result_image.jpg'#+ str(fileNum) +'.jpg'
-        cv2.imwrite(imagePath, cimg)
+        cv2.imwrite(imagePath, img)
 
-        return result 
+        return result
 
     """
         Description: a function that takes a cicle's RGB values and returns if it is water or not
         @param RGB - tuple containing the average red, green, and blue values of a circle
         @return a boolean that will be True if the circle is water
-    """ 
+    """
     def isWater(self, RGB):
         red = RGB[0]
         green = RGB[1]
         blue = RGB[2]
         isWater = False
 
-        
+
         maxRGBValue = 230
         minRGBValue = 3
 
         if red >= maxRGBValue and green >= maxRGBValue and blue >= maxRGBValue:
             isWater = True
         if red <= minRGBValue and green <= minRGBValue and blue <= minRGBValue:
-            isWater = True 
+            isWater = True
         return isWater
-   
+
+    def getCrushedBeads(self, image, circles):
+        temp_img = image.copy()
+        for i in circles[0,:]:
+            # fills in the circle
+            cv2.circle(temp_img, (i[0],i[1]) ,i[2], (255,255,255), -1)
+            #fills the outer edges of the circle
+            cv2.circle(temp_img,(i[0], i[1]), i[2], (255,255,255), 17)
+
+        blur = cv2.GaussianBlur(temp_img, (19, 19), 0)
+        thresh = cv2.threshold(blur, 225, 255, cv2.THRESH_BINARY_INV)[1]
+
+        contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = imutils.grab_contours(contours)
+
+        for c in cnts:
+            cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
+
+        img_output, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        for c in contours:
+            # calculate moments for each contour
+            M = cv2.moments(c)
+
+           # calculate x,y coordinate of center
+            if M["m00"] != 0:
+                cX = int(M["m10"] / M["m00"])
+                cY = int(M["m01"] / M["m00"])
+            else:
+                cX, cY = 0, 0
+            cv2.circle(image, (cX, cY), 5, (0, 0, 255), -1)
+            self.crushedBeads.append((cX, cY))
+
+
+
 
     """
         Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]
@@ -121,7 +159,7 @@ class Counting:
         @param circleInfo - array that contains a circle's x and y coordinates of the center and the radius of the circle
         @param imageMap - a map (image) of the microscope images in color.
         @return a list containing tuple with average RGB values of top 10% from bead, boolean isWater, and x,y,radius value of the bead.
-    """        
+    """
     def getBrightestColor(self, circleInfo):
         img = self.colorMap
         imgY = img.shape[0]
@@ -167,21 +205,21 @@ class Counting:
         @param centerX - X coordinate of the center of bead
         @param centerY - Y coordinate of the center of bead
         @return a zip of the coordinates within a circle
-    """ 
+    """
     def getPointsInCircle(self, radius, centerX, centerY):
         a = np.arange(radius + 1)
         for x, y in zip(*np.where(a[:, np.newaxis]**2 + a**2 <= radius**2)):
             # x and y given here were assuming that the center was at 0,0 therefore you must add the actual center coordinates to give accurate ones back
             yield from set((( centerX + x, centerY + y), (centerX + x, centerY -y), (centerX -x, centerY + y), (centerX -x, centerY -y),))
-                    
+
 
     """
-        Description: 
-        @param 
+        Description:
         @param
-        @param 
-        @return 
-    """ 
+        @param
+        @param
+        @return
+    """
     def makeBeadsCSV(self):
         newPath = self.imagePath
         endIndex = newPath.rfind("/")
