@@ -124,14 +124,20 @@ def getStitchedImage(directory):
 # accepts a path to the stitched image directory
 @app.route('/getResults/<path:directory>')
 def getResults(directory): 
-    magLevel = request.args.get('magLevel')
+    # TODO: make the count config variable not a const but a function
+    magLevel = request.args.get('magLevel') # get maglevel query param to pass to count function
     if(magLevel == "4x"):
         magLevel = HoughConfig.OBJX4
     else: 
         magLevel = HoughConfig.OBJX10
+
     resultsDirectory = directory.split("/")[0]
     serverDirectory = 'Server/resources/uploads/' + directory
+
     count = Counting(serverDirectory)
     circles = count.getColorBeads(magLevel)
-    count.makeBeadsCSV()
+
+    colorOutputType = request.args.get('colorOutputType') # TODO: use this, as it is not hooked to frontend
+    count.makeBeadsCSV('rgb') # TODO: this will be where the colorOutputType query param goes
+
     return render_template('results.html',colorBeads=circles,waterBeads=count.waterBeads, mapLocation=directory, resultsDirectory=resultsDirectory) 
