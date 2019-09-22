@@ -188,4 +188,4 @@ class Counting:
         newPath = newPath.replace("maps", "results")
         newPath = newPath + "/beads.csv"
 
-        util.makeBeadsCSV(newPath, 'cmyk', self.colorBeads) # TODO: pass colorFormat into this method
+        util.makeBeadsCSV(newPath, 'grayscale', self.colorBeads) # TODO: pass colorFormat into this method

@@ -4,6 +4,7 @@ import colorsys
 CSV_RGB_COLNAMES =  ['Bead Number', 'Red Val', 'Green Val', 'Blue Val', 'X-Coord', 'Y-Coord', 'Radius']
 CSV_HSV_COLNAMES = ['Bead Number', 'Hue Val', 'Saturation Val', 'Value Val', 'X-Coord', 'Y-Coord', 'Radius']
 CSV_CMYK_COLNAMES = ['Bead Number', 'Cyan Val', 'Magenta Val', 'Yellow Val', 'Black Val', 'X-Coord', 'Y-Coord', 'Radius']
+CSV_GRAYSCALE_COLNAMES = ['Bead Number', 'Grayscale Red Val', 'Grayscale Green Val', 'Grayscale Blue Val', 'X-Coord', 'Y-Coord', 'Radius']
 
 """
     Description: function that takes beadinfo and creates a csv with varying types of color output data
@@ -12,7 +13,7 @@ CSV_CMYK_COLNAMES = ['Bead Number', 'Cyan Val', 'Magenta Val', 'Yellow Val', 'Bl
 """ 
 def makeBeadsCSV(filepath, colorFormat, colorBeads): 
 
-    colNames = CSV_RGB_COLNAMES
+    colNames = CSV_RGB_COLNAMES # RGB will be selected by default. these values will change if the colorFormat value matches below
     writeFunc = writeOutputRgb
 
     if colorFormat == 'hsv':
@@ -21,12 +22,14 @@ def makeBeadsCSV(filepath, colorFormat, colorBeads):
     elif colorFormat == 'cmyk': 
         colNames = CSV_CMYK_COLNAMES
         writeFunc = writeOutputCmyk
+    elif colorFormat == 'grayscale':
+        colNames = CSV_GRAYSCALE_COLNAMES
+        writeFunc = writeOutputGrayscale
     
     with open(filepath, mode='w', newline='') as beadFile:
         writer = csv.writer(beadFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(colNames)
         writeFunc(writer, colorBeads)
-
 
 def writeOutputRgb(writer, colorBeads): 
     i = 1
@@ -42,7 +45,7 @@ def writeOutputRgb(writer, colorBeads):
 def writeOutputHsv(writer, colorBeads): 
     i = 1
     for bead in colorBeads: 
-        hsv = rgbToHsv(bead[0][0]/255, bead[0][1]/255, bead[0][2]/255) # here, the colorsys conversion function expects values between 0-1 for rgb
+        hsv = colorsys.rgb_to_hsv(bead[0][0]/255, bead[0][1]/255, bead[0][2]/255) # here, the colorsys conversion function expects values between 0-1 for rgb
         h = hsv[0]; s = hsv[1]; v = hsv[2] # the returned values are placed in an array in the order h, s, v
 
         x = bead[2][0]; y = bead[2][1]
@@ -63,9 +66,17 @@ def writeOutputCmyk(writer, colorBeads):
         writer.writerow([i, c, m, y, k, x, y, radius]) # row is written with beadNum, h, s, v, x, y, radius
         i += 1
 
-def rgbToHsv(r, g, b):
-    hsv = colorsys.rgb_to_hsv(r, g, b)
-    return hsv
+def writeOutputGrayscale(writer, colorBeads):
+    i = 1
+    for bead in colorBeads:
+        grayscaleValue = sum(bead[0]) / len(bead[0])
+        r = grayscaleValue; g = grayscaleValue; b = grayscaleValue
+
+        x = bead[2][0]; y = bead[2][1]
+        radius = bead[2][2]
+        
+        writer.writerow([i, r, g, b, x, y, radius]) # row is written with beadNum, r, g, b, x, y, radius
+        i += 1
 
 # TODO: am i allowed to use this code? i copy/pasted it from stack overflow, 
 # more specifically: 

@@ -138,6 +138,6 @@ def getResults(directory):
     circles = count.getColorBeads(magLevel)
 
     colorOutputType = request.args.get('colorOutputType') # TODO: use this, as it is not hooked to frontend
-    count.makeBeadsCSV('rgb') # TODO: this will be where the colorOutputType query param goes
+    count.makeBeadsCSV('placeholder') # TODO: this will be where the colorOutputType query param goes
 
     return render_template('results.html',colorBeads=circles,waterBeads=count.waterBeads, mapLocation=directory, resultsDirectory=resultsDirectory) 
