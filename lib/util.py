@@ -69,7 +69,7 @@ def writeOutputCmyk(writer, colorBeads):
 def writeOutputGrayscale(writer, colorBeads):
     i = 1
     for bead in colorBeads:
-        grayscaleValue = sum(bead[0]) / len(bead[0])
+        grayscaleValue = listAverage(bead[0])
         r = grayscaleValue; g = grayscaleValue; b = grayscaleValue
 
         x = bead[2][0]; y = bead[2][1]
@@ -77,6 +77,9 @@ def writeOutputGrayscale(writer, colorBeads):
         
         writer.writerow([i, r, g, b, x, y, radius]) # row is written with beadNum, r, g, b, x, y, radius
         i += 1
+
+def listAverage(lst): 
+    return sum(lst) / len(lst)
 
 # TODO: am i allowed to use this code? i copy/pasted it from stack overflow, 
 # more specifically: 
