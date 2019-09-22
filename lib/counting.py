@@ -148,10 +148,7 @@ class Counting:
             else:
                 cX, cY = 0, 0
             cv2.circle(image, (cX, cY), 5, (0, 0, 255), -1)
-            self.crushedBeads.append((cX, cY))
-
-
-
+            self.crushedBeads.append([[0, 0, 0], False, [cX, cY, 35]])
 
     """
         Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]

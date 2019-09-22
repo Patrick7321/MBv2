@@ -39,7 +39,8 @@ var imageObj = undefined; //the stitched map image
         ctx.arc(x,y,radius,0,2*Math.PI);
         if(bead[1]){
             ctx.strokeStyle=$("#waterBeadOutline").val();
-        }else{
+        }
+        else{
             ctx.strokeStyle=$("#colorBeadOutline").val();
         }
         ctx.lineWidth=5;
@@ -71,9 +72,9 @@ var imageObj = undefined; //the stitched map image
     @param ctx - the canvas context.
     */
    var handleHover = function(clientX,clientY,ctx) {
-       var allBeads = beads.colorBeads.concat(beads.waterBeads),
+       var allBeads = beads.colorBeads.concat(beads.waterBeads).concat(beads.crushedBeads),
        toolTipBead = undefined;
-       allBeads.forEach(function(bead){
+       allBeads.forEach((bead) => {
            var x = bead[2][0],
                y = bead[2][1],
                radius = bead[2][2];
@@ -136,11 +137,14 @@ var redraw = function(ctx) {
     ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);//clear the canvas before redrawing
     ctx.drawImage(imageObj,0,0,ctx.canvas.width,ctx.canvas.height); //draw the image first
 
-    beads.colorBeads.forEach(function(bead){
+    beads.colorBeads.forEach((bead) => {
         drawBead(bead,ctx);
     });
-    beads.waterBeads.forEach(function(bead){
+    beads.waterBeads.forEach((bead) => {
         drawBead(bead,ctx);
+    });
+    beads.crushedBeads.forEach((bead) => {
+        drawBead(bead, ctx);
     });
 };
 
@@ -160,12 +164,16 @@ $(window).ready(function() {
         ctx.drawImage(imageObj, 0, 0,width,height); //draw the image first
         beads.colorBeads = translateBeads(beads.colorBeads,height,width); //translate bead coordinates to fit new canvas
         beads.waterBeads = translateBeads(beads.waterBeads,height,width);
+        beads.crushedBeads = translateBeads(beads.crushedBeads, height, width);
 
-        beads.colorBeads.forEach(function(bead){
+        beads.colorBeads.forEach((bead) => {
             drawBead(bead,ctx);
         });
-        beads.waterBeads.forEach(function(bead){
+        beads.waterBeads.forEach((bead) => {
             drawBead(bead,ctx);
+        });
+        beads.crushedBeads.forEach((bead) => {
+            drawBead(bead, ctx);
         });
     };
 
