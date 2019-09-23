@@ -97,7 +97,18 @@ var imageObj = undefined; //the stitched map image
             // draw font in red
             ctx.fillStyle = "black";
             ctx.font = "10pt sans-serif";
-            var text = `${toolTipBead[1]}\n RGB: (${toolTipBead[0][0]}, ${toolTipBead[0][1]}, ${toolTipBead[0][2]})\n Location(x,y): (${toolTipBead[2][0]}, ${toolTipBead[2][1]})`
+            let type = '';
+
+            if (toolTipBead[1] === 'crushedBead') {
+                type = 'Crushed Bead';
+            }
+            else if (toolTipBead[1] === 'waterBead') {
+                type = 'Water Bead';
+            }
+            else {
+                type = 'Bead';
+            }
+            var text = `${type} RGB: (${toolTipBead[0][0]}, ${toolTipBead[0][1]}, ${toolTipBead[0][2]}) Location(x,y): (${toolTipBead[2][0]}, ${toolTipBead[2][1]})`
 
             ctx.fillText(text,rectX+10,rectY+(rectHeight/2),rectX+rectWidth);
         }
