@@ -31,16 +31,19 @@ var imageObj = undefined; //the stitched map image
         @param bead - the bead to be drawn.
         @param ctx - the context of the canvas.
     */
-   var drawBead = function(bead,ctx) {
+   var drawBead = function(bead, ctx) {
         var x = bead[2][0],
             y = bead[2][1],
             radius = bead[2][2]/4; //TODO: translate this radius like the x,y
         ctx.beginPath();
         ctx.arc(x,y,radius,0,2*Math.PI);
-        if(bead[1]){
+        if(bead[1] === 'waterBead') {
             ctx.strokeStyle=$("#waterBeadOutline").val();
         }
-        else{
+        else if (bead[1] === 'crushedBead') {
+            ctx.strokeStyle = $('#crushedBeadOutline').val();
+        }
+        else {
             ctx.strokeStyle=$("#colorBeadOutline").val();
         }
         ctx.lineWidth=5;
@@ -94,7 +97,7 @@ var imageObj = undefined; //the stitched map image
             // draw font in red
             ctx.fillStyle = "black";
             ctx.font = "10pt sans-serif";
-            var text = "RGB: ("+toolTipBead[0][0]+", "+toolTipBead[0][1]+", "+toolTipBead[0][2] + ")    isWater: "+toolTipBead[1];
+            var text = `${toolTipBead[1]}\n RGB: (${toolTipBead[0][0]}, ${toolTipBead[0][1]}, ${toolTipBead[0][2]})\n Location(x,y): (${toolTipBead[2][0]}, ${toolTipBead[2][1]})`
 
             ctx.fillText(text,rectX+10,rectY+(rectHeight/2),rectX+rectWidth);
         }
@@ -137,6 +140,10 @@ var redraw = function(ctx) {
     ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);//clear the canvas before redrawing
     ctx.drawImage(imageObj,0,0,ctx.canvas.width,ctx.canvas.height); //draw the image first
 
+    drawBeads(beads, ctx);
+};
+
+let drawBeads = function(beads, ctx) {
     beads.colorBeads.forEach((bead) => {
         drawBead(bead,ctx);
     });
@@ -146,7 +153,7 @@ var redraw = function(ctx) {
     beads.crushedBeads.forEach((bead) => {
         drawBead(bead, ctx);
     });
-};
+}
 
 $(window).ready(function() {
     var canvas = document.getElementById('mapCanvas'),
@@ -166,21 +173,16 @@ $(window).ready(function() {
         beads.waterBeads = translateBeads(beads.waterBeads,height,width);
         beads.crushedBeads = translateBeads(beads.crushedBeads, height, width);
 
-        beads.colorBeads.forEach((bead) => {
-            drawBead(bead,ctx);
-        });
-        beads.waterBeads.forEach((bead) => {
-            drawBead(bead,ctx);
-        });
-        beads.crushedBeads.forEach((bead) => {
-            drawBead(bead, ctx);
-        });
+        drawBeads(beads, ctx)
     };
 
-    $("#colorBeadOutline").change(function(){
+    $("#colorBeadOutline").change(function() {
         redraw(ctx);
     });
-    $("#waterBeadOutline").change(function(){
+    $("#waterBeadOutline").change(function() {
+        redraw(ctx);
+    });
+    $("#crushedBeadOutline").change(function() {
         redraw(ctx);
     });
 

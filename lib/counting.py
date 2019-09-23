@@ -84,7 +84,7 @@ class Counting:
             cv2.circle(cimg,(i[0],i[1]),2,(0,0,255),3)
 
             color = self.getBrightestColor(i)
-            if(color[1] == False): # if the bead is a water bead, leave it out.
+            if(color[1] == 'bead'): # if the bead is a water bead, leave it out.
                 self.colorBeads.append(color)
                 result.append(color)
             else:
@@ -148,7 +148,7 @@ class Counting:
             else:
                 cX, cY = 0, 0
             cv2.circle(image, (cX, cY), 5, (0, 0, 255), -1)
-            self.crushedBeads.append([[0, 0, 0], False, [cX, cY, 35]])
+            self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
 
     """
         Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]
@@ -192,7 +192,8 @@ class Counting:
 
         average = (round(np.mean(reds), 2), round(np.mean(greens), 2), round(np.mean(blues), 2))
         isWater = self.isWater(average)
-        return [[average[0],average[1],average[2]], isWater, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
+        type = 'waterBead' if isWater else 'bead'
+        return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
 
 
     """
