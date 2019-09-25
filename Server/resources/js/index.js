@@ -46,6 +46,24 @@ $(document).ready(function() {
         }
         prevSrc = null;
 
+    let minBeadValue = document.getElementById('min-bead-value');
+    let minSizeSlider = document.getElementById('min-size-slider');
+
+    let maxBeadValue = document.getElementById('max-bead-value');
+    let maxSizeSlider = document.getElementById('max-size-slider');
+
+    minBeadValue.innerText = minSizeSlider.value;
+    maxBeadValue.innerText = maxSizeSlider.value;
+
+    minSizeSlider.oninput = function() {
+        minBeadValue.innerHTML = this.value;
+    }
+
+    maxSizeSlider.oninput = function() {
+        maxBeadValue.innerHTML = this.value;
+    }
+
+
     imageUpload.change(function(e) {
         let invalidFiles;
 

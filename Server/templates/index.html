@@ -34,7 +34,6 @@ SOFTWARE. -->
         </div>
         <div class='container'>
             <h1>M.O.S.A.I.C</h1>
-
             <div id='alert-container'></div>
             <div class='row'>
                 <div class='col-6 text-center'>
@@ -73,25 +72,79 @@ SOFTWARE. -->
                 </div>
                 <div class='col-6 text-center'>
                     <div class='card'>
-                        <div class='card-header'><h2 class='mb-0'>Upload Video</h2></div>
-                        <div id="video-holder" class='card-body'>
-                            <img id='video-placeholder' class='d-block w-100' src='/resources/imgs/no-video.jpg' alt='No Video'/>
-                            <video class='d-none w-100' width='640' controls>
-                                <source id='video-src' src=''>
-                                    Your browser does not support HTML5 video.
-                            </video>
-                            <form id='video-form' action='/uploadVideo' method='post' enctype='multipart/form-data'>
-                                <div class='input-group'>
-                                    <div class='input-group-prepend'>
-                                        <button class='btn btn-danger cancel-btn' type='button' id='cancel-video' disabled>Cancel</button>
+                        <div class='card-header'><h2 class='mb-0'>Settings</h2></div>
+
+                        <div class='card-body'>
+                            <!-- Toggle for water bubbles -->
+                            <div class='row extra-margin-left'>
+                                <label class="switch">
+                                    <input type="checkbox">
+                                    <span class="slider round"></span>
+                                </label>
+                                <span class='toggle-label'>Water Bubble Detection</span>
+                            </div>
+
+                            <!-- Toggle for Crushed Beads -->
+                            <div class='row extra-margin-left'>
+                                <label class="switch">
+                                    <input type="checkbox">
+                                    <span class="slider round"></span>
+                                </label>
+                                <span class='toggle-label'>Crushed Bead Detection</span>
+                            </div>
+
+                            <!-- Dropdown for Color Algorithm selection -->
+                            <div class='row setting-row extra-margin-left'>
+                                <!--<div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Bead Color Algorithm
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" href="#">4 Corners</a>
+                                        <a class="dropdown-item" href="#">Middle 10%</a>
+                                        <a class="dropdown-item" href="#">Something else here</a>
                                     </div>
-                                    <div class='custom-file'>
-                                        <input id='video-upload' type='file' class='custom-file-input d-none' name='video' accept='video/mp4' disabled>
-                                        <label id='video-label' class='custom-file-label pr-5' for='video-upload'>Choose video</label>
+                                </div> -->
+                                <div class='col-6'>
+                                    <select class="form-control" id="exampleFormControlSelect1">
+                                            <option>4 Corners</option>
+                                            <option>Middle 10%</option>
+                                            <option>Radius Average</option>
+                                    </select>
+                                </div>
+                                <span class='select-label'>Color Detection Algorithm</span>
+                            </div>
+
+                            <!-- Sliders for minimum and maximum bead sizes -->
+                            <div class='row setting-row'>
+                                    <div class='col-3'>
+                                        <span>Min Radius</span>
+                                    </div>
+                                    <div class='col-6'>
+                                        <div class="slidecontainer">
+                                            <input type="range" min="1" max="125" value="62" class="slidebar" id="min-size-slider">
+                                        </div>
+                                    </div>
+                                    <div class='col-3'>
+                                        <span id='min-bead-value'>1</span>
+                                    </div>
+                            </div>
+
+                            <div class='row'>
+                                <div class='col-3'>
+                                    <span>Max Radius</span>
+                                </div>
+                                <div class='col-6'>
+                                    <div class="slidecontainer">
+                                        <input type="range" min="0" max="125" value="62" class="slidebar" id="max-size-slider">
                                     </div>
                                 </div>
-                                <input id='video-mag-input' type='hidden' name='mag-level' value='4X' />
-                            </form>
+                                <div class='col-3'>
+                                    <span id='max-bead-value'>1</span>
+                                </div>
+                            </div>
+
+
                         </div>
                     </div>
                 </div>
