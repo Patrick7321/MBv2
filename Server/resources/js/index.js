@@ -38,6 +38,7 @@ $(document).ready(function() {
         slideHolder = $('#slide-holder'),
         videoHolder = $('#video-holder'),
         alertContainer = $('#alert-container'),
+        crushedBeadCheckbox = $('#crushed-bead-checkbox')
         overlay = $('#overlay'),
         timeoutMgr = {
             imgFormatTimeout: null,
@@ -45,7 +46,6 @@ $(document).ready(function() {
             postTimeout: null,
         }
         prevSrc = null;
-
     let minBeadValue = document.getElementById('min-bead-value');
     let minSizeSlider = document.getElementById('min-size-slider');
 
@@ -62,6 +62,10 @@ $(document).ready(function() {
     maxSizeSlider.oninput = function() {
         maxBeadValue.innerHTML = this.value;
     }
+
+    crushedBeadCheckbox.click(() => {
+        crushedBeadCheckbox.toggle(this.checked);
+    })
 
 
     imageUpload.change(function(e) {
@@ -172,12 +176,14 @@ $(document).ready(function() {
 
     submit.click(function() {
         let data = imageUpload.val() != null && imageUpload.val() !== '' ? new FormData(imageForm[0]) : new FormData(videoForm[0]);
+        let crushedBeadDetection = crushedBeadCheckbox[0].checked;
+        let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}`;
 
         overlay.removeClass('d-none');
 
         $.ajax({
             method: 'POST',
-            url: imageUpload.val() != null && imageUpload.val() !== '' ? '/uploadImages' : '/uploadVideo',
+            url: url,
             enctype: 'multipart/form-data',
             data: data,
             cache: false,

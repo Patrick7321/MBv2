@@ -38,6 +38,20 @@ ALLOWED_IMAGE_EXTENSIONS = set(['jpg', 'jpeg'])
 ALLOWED_VIDEO_EXTENSIONS = set(['mp4', 'avi'])
 
 """
+    Description: a template class used for defining the detection parameters
+    given from the front end.
+"""
+class Parameters():
+    def __init__(self):
+        self.wantsCrushedBeads = False
+        self.wantsWaterBubbles = False
+        self.beadUpperBound = 0
+        self.beadLowerBound = 0
+        self.detectionAlgorithm = ''
+
+detectionParams = Parameters()
+
+"""
     Description: a function used to see if the uploaded file is in a valid format.
     @Param filename - name of the file being uploaded.
     @Param extensionList - set of allowed file extensions.
@@ -77,6 +91,12 @@ def error():
 @app.route('/uploadImages', methods=["POST"])
 def uploadImages():
     images = request.files.getlist("images")
+    wantsCrushed = request.args['wantsCrushed']
+
+    if wantsCrushed == 'true': # changing the js boolean to a python boolean
+        detectionParams.wantsCrushedBeads = True
+    else:
+        detectionParams.wantsCrushedBeads = False
 
     newDir = setupUploadDir()
 
@@ -132,7 +152,7 @@ def getResults(directory):
     resultsDirectory = directory.split("/")[0]
     serverDirectory = 'Server/resources/uploads/' + directory
     count = Counting(serverDirectory)
-    circles = count.getColorBeads(magLevel)
+    circles = count.getColorBeads(magLevel, detectionParams)
     count.makeBeadsCSV()
     return render_template('results.html', colorBeads = circles, waterBeads = count.waterBeads,
         crushedBeads = count.crushedBeads, mapLocation = directory, resultsDirectory = resultsDirectory)

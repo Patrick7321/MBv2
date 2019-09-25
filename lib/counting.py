@@ -65,7 +65,7 @@ class Counting:
         @Param houghConfig - a HoughConfig object that contains the values for the HoughCircles() function
         @return an object containing information collected during the counting process.
     """
-    def getColorBeads(self, houghConfig):
+    def getColorBeads(self, houghConfig, detectionParams):
         houghConfig = houghConfig.value
         result = []
 
@@ -90,7 +90,8 @@ class Counting:
             else:
                 self.waterBeads.append(color)
 
-        self.getCrushedBeads(img, circles)
+        if detectionParams.wantsCrushedBeads: # if the user wants to detect crushed beads.
+            self.getCrushedBeads(img, circles)
 
         imagePath = '/'.join(self.imagePath.split('/')[:-2]) + '/results/'
         imagePath += 'result_image.jpg'#+ str(fileNum) +'.jpg'
