@@ -86,31 +86,52 @@ var imageObj = undefined; //the stitched map image
             }
         });
         if(toolTipBead){
-            var rectWidth = 300,
-                rectHeight = 50,
+            const canvas = $('#mapCanvas');
+            const canvasHeight = canvas.height();
+            const canvasWidth = canvas.width();
+            const location = `(${Math.round(toolTipBead[2][0])}, ${Math.round(toolTipBead[2][1])})`;
+            let type = '';
+            let rgb = `(${Math.round(toolTipBead[0][0])}, ${Math.round(toolTipBead[0][1])}, ${Math.round(toolTipBead[0][2])})`;
+            var rectWidth = 250,
+                rectHeight = 60,
                 rectX = toolTipBead[2][0],
                 rectY = toolTipBead[2][1];
-            redraw(ctx);
+                redraw(ctx);
+
+            // Create the popup dialog box
+            if (rectX + rectWidth > canvasWidth) {
+                rectX -= rectWidth;
+            }
+
+            if (rectY + rectHeight > canvasHeight) {
+                rectY -= rectHeight
+            }
 
             ctx.fillStyle = "white";
-            ctx.fillRect(rectX,rectY,rectWidth,rectHeight);
-            // draw font in red
-            ctx.fillStyle = "black";
-            ctx.font = "10pt sans-serif";
-            let type = '';
+            ctx.font = "13pt sans-serif";
+            ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
 
             if (toolTipBead[1] === 'crushedBead') {
                 type = 'Crushed Bead';
-            }
-            else if (toolTipBead[1] === 'waterBead') {
+                rgb = 'N/A';
+                ctx.fillStyle = $('#crushedBeadOutline').val();
+            } else if (toolTipBead[1] === 'waterBead') {
                 type = 'Water Bead';
-            }
-            else {
+                ctx.fillStyle = $('#waterBeadOutline').val();
+            } else {
                 type = 'Bead';
+                ctx.fillStyle = $('#colorBeadOutline').val()
             }
-            var text = `${type} RGB: (${toolTipBead[0][0]}, ${toolTipBead[0][1]}, ${toolTipBead[0][2]}) Location(x,y): (${toolTipBead[2][0]}, ${toolTipBead[2][1]})`
 
-            ctx.fillText(text,rectX+10,rectY+(rectHeight/2),rectX+rectWidth);
+            // fill the object type into the textbox
+            ctx.fillText(type, rectX + 10, rectY + (rectHeight / 3), rectX + rectWidth);
+
+            ctx.fillStyle = 'black';
+            ctx.font = '10pt sans-serif';
+            const information = `RGB: ${rgb}    X,Y: ${location}`;
+
+            // fill in the object information (rgb, location) into the textbox
+            ctx.fillText(information, rectX + 10, rectY + (rectHeight / 1.5), rectX + rectWidth);
         }
     };
 
