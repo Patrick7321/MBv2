@@ -28,18 +28,22 @@ var imageObj = undefined; //the stitched map image
 
     /*
         a function to draw a bead
-        @param bead - the bead to be drawn. 
+        @param bead - the bead to be drawn.
         @param ctx - the context of the canvas.
     */
-   var drawBead = function(bead,ctx) {
+   var drawBead = function(bead, ctx) {
         var x = bead[2][0],
             y = bead[2][1],
             radius = bead[2][2]/4; //TODO: translate this radius like the x,y
         ctx.beginPath();
         ctx.arc(x,y,radius,0,2*Math.PI);
-        if(bead[1]){
+        if(bead[1] === 'waterBead') {
             ctx.strokeStyle=$("#waterBeadOutline").val();
-        }else{
+        }
+        else if (bead[1] === 'crushedBead') {
+            ctx.strokeStyle = $('#crushedBeadOutline').val();
+        }
+        else {
             ctx.strokeStyle=$("#colorBeadOutline").val();
         }
         ctx.lineWidth=5;
@@ -51,7 +55,7 @@ var imageObj = undefined; //the stitched map image
         @param x - the x position to check
         @param y - the y position to check
         @param cx - the circle x position
-        @param cy - the circle y position 
+        @param cy - the circle y position
         @param radius - the radius of the circle
     */
     var pointInCircle = function(x, y, cx, cy, radius) {
@@ -59,21 +63,21 @@ var imageObj = undefined; //the stitched map image
             dy = y - cy,
             dist = Math.sqrt(dx * dx + dy * dy);
         return dist < radius;
-        
+
         // var distsq = (x-cx)*(x-cx) + (y-cy)*(y-cy);
         // return distsq <= radius*radius;
     };
-    
+
     /*
-    a function to handle the hover over the canvas. 
-    @param clientX - the x position of the clients mouse. 
+    a function to handle the hover over the canvas.
+    @param clientX - the x position of the clients mouse.
     @param clientY - the y position of the clients mouse.
     @param ctx - the canvas context.
     */
    var handleHover = function(clientX,clientY,ctx) {
-       var allBeads = beads.colorBeads.concat(beads.waterBeads),
+       var allBeads = beads.colorBeads.concat(beads.waterBeads).concat(beads.crushedBeads),
        toolTipBead = undefined;
-       allBeads.forEach(function(bead){
+       allBeads.forEach((bead) => {
            var x = bead[2][0],
                y = bead[2][1],
                radius = bead[2][2];
@@ -93,25 +97,36 @@ var imageObj = undefined; //the stitched map image
             // draw font in red
             ctx.fillStyle = "black";
             ctx.font = "10pt sans-serif";
-            var text = "RGB: ("+toolTipBead[0][0]+", "+toolTipBead[0][1]+", "+toolTipBead[0][2] + ")    isWater: "+toolTipBead[1];
-        
+            let type = '';
+
+            if (toolTipBead[1] === 'crushedBead') {
+                type = 'Crushed Bead';
+            }
+            else if (toolTipBead[1] === 'waterBead') {
+                type = 'Water Bead';
+            }
+            else {
+                type = 'Bead';
+            }
+            var text = `${type} RGB: (${toolTipBead[0][0]}, ${toolTipBead[0][1]}, ${toolTipBead[0][2]}) Location(x,y): (${toolTipBead[2][0]}, ${toolTipBead[2][1]})`
+
             ctx.fillText(text,rectX+10,rectY+(rectHeight/2),rectX+rectWidth);
         }
     };
 
     /*
         a function to translate a x/y value into a new height/width of a canvas.
-        @param coord - the coordinate to translate into a new range. 
+        @param coord - the coordinate to translate into a new range.
         @param oldRange - old height/width.
         @param newRange - new height/width.
     */
     var translateCoord = function(coord,oldRange,newRange) {
         return ((coord*newRange) / oldRange);
     };
-    
+
     /*
     a function used to translate the beads from the old image height/width to the new canvas height/width.
-    @param beadArray - the bead array to translate 
+    @param beadArray - the bead array to translate
     @param height - the new canvas height
     @param width - the new canvas width
     */
@@ -136,13 +151,20 @@ var redraw = function(ctx) {
     ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);//clear the canvas before redrawing
     ctx.drawImage(imageObj,0,0,ctx.canvas.width,ctx.canvas.height); //draw the image first
 
-    beads.colorBeads.forEach(function(bead){
-        drawBead(bead,ctx);
-    });
-    beads.waterBeads.forEach(function(bead){
-        drawBead(bead,ctx);
-    });
+    drawBeads(beads, ctx);
 };
+
+let drawBeads = function(beads, ctx) {
+    beads.colorBeads.forEach((bead) => {
+        drawBead(bead,ctx);
+    });
+    beads.waterBeads.forEach((bead) => {
+        drawBead(bead,ctx);
+    });
+    beads.crushedBeads.forEach((bead) => {
+        drawBead(bead, ctx);
+    });
+}
 
 $(window).ready(function() {
     var canvas = document.getElementById('mapCanvas'),
@@ -154,25 +176,24 @@ $(window).ready(function() {
     imageObj.src = mapLocation;
     ctx.canvas.width = width;
     ctx.canvas.height = height;
-    
+
     imageObj.onload = function() {
 
         ctx.drawImage(imageObj, 0, 0,width,height); //draw the image first
         beads.colorBeads = translateBeads(beads.colorBeads,height,width); //translate bead coordinates to fit new canvas
         beads.waterBeads = translateBeads(beads.waterBeads,height,width);
+        beads.crushedBeads = translateBeads(beads.crushedBeads, height, width);
 
-        beads.colorBeads.forEach(function(bead){
-            drawBead(bead,ctx);
-        });
-        beads.waterBeads.forEach(function(bead){
-            drawBead(bead,ctx);
-        });
+        drawBeads(beads, ctx)
     };
 
-    $("#colorBeadOutline").change(function(){
+    $("#colorBeadOutline").change(function() {
         redraw(ctx);
     });
-    $("#waterBeadOutline").change(function(){
+    $("#waterBeadOutline").change(function() {
+        redraw(ctx);
+    });
+    $("#crushedBeadOutline").change(function() {
         redraw(ctx);
     });
 

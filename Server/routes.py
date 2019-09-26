@@ -38,6 +38,20 @@ ALLOWED_IMAGE_EXTENSIONS = set(['jpg', 'jpeg'])
 ALLOWED_VIDEO_EXTENSIONS = set(['mp4', 'avi'])
 
 """
+    Description: a template class used for defining the detection parameters
+    given from the front end.
+"""
+class Parameters():
+    def __init__(self):
+        self.wantsCrushedBeads = False
+        self.wantsWaterBubbles = False
+        self.beadUpperBound = 0
+        self.beadLowerBound = 0
+        self.detectionAlgorithm = ''
+
+detectionParams = Parameters()
+
+"""
     Description: a function used to see if the uploaded file is in a valid format.
     @Param filename - name of the file being uploaded.
     @Param extensionList - set of allowed file extensions.
@@ -75,14 +89,20 @@ def error():
     return render_template('error.html',error=errorMessage)
 
 @app.route('/uploadImages', methods=["POST"])
-def uploadImages(): 
+def uploadImages():
     images = request.files.getlist("images")
+    wantsCrushed = request.args['wantsCrushed']
+
+    if wantsCrushed == 'true': # changing the js boolean to a python boolean
+        detectionParams.wantsCrushedBeads = True
+    else:
+        detectionParams.wantsCrushedBeads = False
 
     newDir = setupUploadDir()
 
-    for i in images: 
+    for i in images:
         #redirect to error page if the image is in an unacceptable
-        if(isFileAllowed(i.filename,ALLOWED_IMAGE_EXTENSIONS) == False): 
+        if(isFileAllowed(i.filename,ALLOWED_IMAGE_EXTENSIONS) == False):
             return jsonify({"status": 1, "msg": "One or more of the images that were uploaded are in the incorrect format. Accepted formats: "+(", ".join(ALLOWED_IMAGE_EXTENSIONS))})
 
         print("Image is permitted: "+str(isFileAllowed(i.filename,ALLOWED_IMAGE_EXTENSIONS))) #see if the image format is allowed
@@ -90,11 +110,11 @@ def uploadImages():
 
         imgPath = newDir + "/images/" + str(secure_filename(i.filename))
         i.save(imgPath)
-    
+
     return jsonify({"status": 0, "msg": "Success","location": newDir.replace("Server/resources/uploads","")}) #redirect to homepage
 
 @app.route('/uploadVideo', methods=["POST"])
-def uploadVideo(): 
+def uploadVideo():
     video = request.files['video']
 
     newDir = setupUploadDir()
@@ -114,10 +134,10 @@ def uploadVideo():
 
 # accepts a path to the image directory to use for stitching
 @app.route('/getStitchedImage/<path:directory>')
-def getStitchedImage(directory): 
+def getStitchedImage(directory):
     dirPrefix="Server/resources/uploads/"
     stitcher = Stitching()
-    
+
     stitcher.twoRoundStitch(dirPrefix + directory + "/images/", dirPrefix + directory + "/maps/")
     return render_template('stitched.html', direct=directory)
 
@@ -126,18 +146,21 @@ def getStitchedImage(directory):
 def getResults(directory): 
     # TODO: make the count config variable not a const but a function
     magLevel = request.args.get('magLevel') # get maglevel query param to pass to count function
+
     if(magLevel == "4x"):
         magLevel = HoughConfig.OBJX4
-    else: 
+    else:
         magLevel = HoughConfig.OBJX10
 
     resultsDirectory = directory.split("/")[0]
     serverDirectory = 'Server/resources/uploads/' + directory
 
     count = Counting(serverDirectory)
-    circles = count.getColorBeads(magLevel)
 
-    colorOutputType = request.args.get('colorOutputType') # TODO: use this, as it is not hooked to frontend
+    circles = count.getColorBeads(magLevel, detectionParams)
+
+    colorOutputType = request.args.get('colorOutputType') # TODO: use the query parameter colorOutputType, as it is not hooked to frontend
     count.makeBeadsCSV('placeholder') # TODO: this will be where the colorOutputType query param goes
 
-    return render_template('results.html',colorBeads=circles,waterBeads=count.waterBeads, mapLocation=directory, resultsDirectory=resultsDirectory) 
+    return render_template('results.html', colorBeads = circles, waterBeads = count.waterBeads,
+        crushedBeads = count.crushedBeads, mapLocation = directory, resultsDirectory = resultsDirectory)

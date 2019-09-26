@@ -38,6 +38,7 @@ $(document).ready(function() {
         slideHolder = $('#slide-holder'),
         videoHolder = $('#video-holder'),
         alertContainer = $('#alert-container'),
+        crushedBeadCheckbox = $('#crushed-bead-checkbox')
         overlay = $('#overlay'),
         timeoutMgr = {
             imgFormatTimeout: null,
@@ -45,7 +46,28 @@ $(document).ready(function() {
             postTimeout: null,
         }
         prevSrc = null;
-    
+    let minBeadValue = document.getElementById('min-bead-value');
+    let minSizeSlider = document.getElementById('min-size-slider');
+
+    let maxBeadValue = document.getElementById('max-bead-value');
+    let maxSizeSlider = document.getElementById('max-size-slider');
+
+    minBeadValue.innerText = minSizeSlider.value;
+    maxBeadValue.innerText = maxSizeSlider.value;
+
+    minSizeSlider.oninput = function() {
+        minBeadValue.innerHTML = this.value;
+    }
+
+    maxSizeSlider.oninput = function() {
+        maxBeadValue.innerHTML = this.value;
+    }
+
+    crushedBeadCheckbox.click(() => {
+        crushedBeadCheckbox.toggle(this.checked);
+    })
+
+
     imageUpload.change(function(e) {
         let invalidFiles;
 
@@ -55,20 +77,20 @@ $(document).ready(function() {
         invalidFiles = Array.from(this.files).filter(function(file) {
             return !(file.name.endsWith('.jpg') || file.name.endsWith('.jpeg'));
         });
-    
+
         if (this.files.length > 0 && invalidFiles.length === 0) {
             if (this.files.length > 1) {
                 $('.carousel-control-prev').removeClass('d-none');
                 $('.carousel-control-next').removeClass('d-none');
             }
-    
+
             cancelImages.prop('disabled', false);
             submit.prop('disabled', false);
             $('#image-label').text(this.files.length + ' images selected');
-    
+
             $.each(this.files, function(idx, file) {
                 let reader = new FileReader();
-    
+
                 reader.onload = function(e) {
                     let carouselItem = $('<div class="carousel-item"></div>'),
                         image = $('<img class="d-block w-100"/>')
@@ -78,18 +100,18 @@ $(document).ready(function() {
                             }),
                         caption = $('<div class="carousel-caption d-none d-md-block"></div>'),
                         captionText = $('<span class="caption-text"></span>').text(e.target.fileName);
-                            
+
                     if (idx === 0) {
                         carouselItem.addClass('active');
                         $('#img-placeholder').parent().remove()
                     }
-                    
+
                     caption.append(captionText);
                     carouselItem.append(image);
                     carouselItem.append(caption);
                     slideHolder.append(carouselItem);
                 }
-    
+
                 reader.fileName = file.name;
                 reader.readAsDataURL(file);
             });
@@ -116,7 +138,7 @@ $(document).ready(function() {
             else {
                 URL.revokeObjectURL(prevSrc);
             }
-            
+
             $('#video-label').text(this.files[0].name);
 
             cancelVideo.prop('disabled', false);
@@ -131,11 +153,11 @@ $(document).ready(function() {
     cancelVideo.click(function() {
         if (videoUpload.val() != null && videoUpload.val() !== '') {
             let placeholder = $('<img id="video-placeholder" class="d-block w-100" src="/resources/imgs/no-video.jpg" alt="No Video"/>');
-        
+
             cancelVideo.prop('disabled', true);
             submit.prop('disabled', true);
             $('#video-label').text('Choose video');
-        
+
             URL.revokeObjectURL(videoSource[0].src);
             videoSource[0].src = '';
             videoSource.parent()[0].load();
@@ -146,20 +168,22 @@ $(document).ready(function() {
             videoHolder.prepend(placeholder);
         }
     });
-    
+
     cancelImages.click(function() {
         cancelImagePreview();
         imageUpload.val(null);
     });
-    
+
     submit.click(function() {
         let data = imageUpload.val() != null && imageUpload.val() !== '' ? new FormData(imageForm[0]) : new FormData(videoForm[0]);
+        let crushedBeadDetection = crushedBeadCheckbox[0].checked;
+        let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}`;
 
         overlay.removeClass('d-none');
 
         $.ajax({
             method: 'POST',
-            url: imageUpload.val() != null && imageUpload.val() !== '' ? '/uploadImages' : '/uploadVideo',
+            url: url,
             enctype: 'multipart/form-data',
             data: data,
             cache: false,
@@ -168,7 +192,7 @@ $(document).ready(function() {
         })
         .done(function(e) {
             if (e.status === 0) {
-                window.location.href = 'getStitchedImage'+e.location;
+                window.location.href = 'getStitchedImage' + e.location;
             }
             else {
                 postFail();
@@ -197,17 +221,17 @@ $(document).ready(function() {
 
     function cancelImagePreview() {
         let placeholder = $('<div class="carousel-item active"><img id="img-placeholder" class="d-block w-100" src="/resources/imgs/no-slides.jpg" alt="No Slides"></div>');
-    
+
         cancelImages.prop('disabled', true);
         submit.prop('disabled', true);
         $('.carousel-control-prev').addClass('d-none');
         $('.carousel-control-next').addClass('d-none');
         $('#image-label').text('Choose images');
-    
+
         while (slideHolder.children().length !== 0) {
             slideHolder.children()[0].remove();
         }
-    
+
         placeholder.addClass('active');
         slideHolder.append(placeholder);
     }
