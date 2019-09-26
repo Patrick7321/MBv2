@@ -1,0 +1,7 @@
+__pycache__
+results/
+node_modules/
+Server/resources/uploads/*
+test/resources/sample*/*Copy*
+uploads/
+.vscode
