@@ -91,11 +91,11 @@ class Counting:
                 self.waterBeads.append(color)
 
         if detectionParams.wantsCrushedBeads: # if the user wants to detect crushed beads.
-            self.getCrushedBeads(img, circles)
+            self.getCrushedBeads(cimg, circles)
 
         imagePath = '/'.join(self.imagePath.split('/')[:-2]) + '/results/'
         imagePath += 'result_image.jpg'#+ str(fileNum) +'.jpg'
-        cv2.imwrite(imagePath, img)
+        cv2.imwrite(imagePath, cimg)
 
         return result
 
@@ -121,7 +121,7 @@ class Counting:
         return isWater
 
     def getCrushedBeads(self, image, circles):
-        temp_img = image.copy()
+        temp_img = self.grayScaleMap.copy()
         for i in circles[0,:]:
             # fills in the circle
             cv2.circle(temp_img, (i[0],i[1]) ,i[2], (255,255,255), -1)
@@ -130,14 +130,8 @@ class Counting:
 
         blur = cv2.GaussianBlur(temp_img, (19, 19), 0)
         thresh = cv2.threshold(blur, 225, 255, cv2.THRESH_BINARY_INV)[1]
-
-        contours = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cnts = imutils.grab_contours(contours)
-
-        for c in cnts:
-            cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
-
         img_output, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
         for c in contours:
             # calculate moments for each contour
             M = cv2.moments(c)
@@ -148,6 +142,10 @@ class Counting:
                 cY = int(M["m01"] / M["m00"])
             else:
                 cX, cY = 0, 0
+
+            x = self.getBrightestColor([cX, cY, 10])
+            print(x)
+
             cv2.circle(image, (cX, cY), 5, (0, 0, 255), -1)
             self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
 

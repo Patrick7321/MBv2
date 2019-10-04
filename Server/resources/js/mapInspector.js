@@ -87,23 +87,22 @@ var imageObj = undefined; //the stitched map image
         });
         if(toolTipBead){
             const canvas = $('#mapCanvas');
-            const canvasHeight = canvas.height();
-            const canvasWidth = canvas.width();
             const location = `(${Math.round(toolTipBead[2][0])}, ${Math.round(toolTipBead[2][1])})`;
+            const radius = Math.round(toolTipBead[2][2]);
             let type = '';
             let rgb = `(${Math.round(toolTipBead[0][0])}, ${Math.round(toolTipBead[0][1])}, ${Math.round(toolTipBead[0][2])})`;
-            var rectWidth = 250,
+            var rectWidth = 325,
                 rectHeight = 60,
                 rectX = toolTipBead[2][0],
                 rectY = toolTipBead[2][1];
-                redraw(ctx);
+            redraw(ctx);
 
             // Create the popup dialog box
-            if (rectX + rectWidth > canvasWidth) {
+            if (rectX + rectWidth > canvas.width()) {
                 rectX -= rectWidth;
             }
 
-            if (rectY + rectHeight > canvasHeight) {
+            if (rectY + rectHeight > canvas.height()) {
                 rectY -= rectHeight
             }
 
@@ -128,9 +127,9 @@ var imageObj = undefined; //the stitched map image
 
             ctx.fillStyle = 'black';
             ctx.font = '10pt sans-serif';
-            const information = `RGB: ${rgb}    X,Y: ${location}`;
+            const information = `RGB: ${rgb}  X,Y: ${location}  Radius: ${radius}`;
 
-            // fill in the object information (rgb, location) into the textbox
+            // fill in the object information (rgb, location, radius) into the textbox
             ctx.fillText(information, rectX + 10, rectY + (rectHeight / 1.5), rectX + rectWidth);
         }
     };
