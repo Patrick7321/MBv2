@@ -34,6 +34,7 @@ import itertools
 import csv
 from enum import Enum
 from os import listdir, path
+from . import util
 
 """
     Description: an enum class to handle the HoughCircle configuration values that are used in cv2.HoughCircles().
@@ -211,30 +212,15 @@ class Counting:
 
 
     """
-        Description:
-        @param
-        @param
-        @param
-        @return
-    """
-    def makeBeadsCSV(self):
+        Description: 
+        @param colorFormat: a string that is either 'rgb', 'hsv', 'cmyk', or 'grayscale'
+        @return void, writes file directly from class attributes
+    """ 
+    def makeBeadsCSV(self, colorFormat):
         newPath = self.imagePath
         endIndex = newPath.rfind("/")
         newPath = newPath[:endIndex]
         newPath = newPath.replace("maps", "results")
         newPath = newPath + "/beads.csv"
-        with open(newPath, mode='w', newline='') as beadFile:
-            writer = csv.writer(beadFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            colNames = ['Bead Number', 'Red Val', 'Green Val', 'Blue Val', 'X-Coord', 'Y-Coord', 'Radius']
-            writer.writerow(colNames)
-            i = 1
-            for bead in self.colorBeads:
-                r = bead[0][0]
-                g = bead[0][1]
-                b = bead[0][2]
-                x = bead[2][0]
-                y = bead[2][1]
-                radius = bead[2][2]
-                beadNum = i
-                writer.writerow([beadNum, r, g, b, x, y, radius])
-                i += 1
+
+        util.makeBeadsCSV(newPath, 'grayscale', self.colorBeads) # TODO: pass colorFormat into this method
