@@ -5,3 +5,4 @@ Server/resources/uploads/*
 test/resources/sample*/*Copy*
 uploads/
 .vscode
+venv/
