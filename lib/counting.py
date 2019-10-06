@@ -52,7 +52,6 @@ class HoughConfig(Enum):
 """
 class Counting:
 
-
     def __init__(self, imagePath):
         self.imagePath = imagePath
         self.grayScaleMap = cv2.imread(imagePath,0) # create grayscale cv2 img
@@ -225,4 +224,4 @@ class Counting:
         newPath = newPath.replace("maps", "results")
         newPath = newPath + "/beads.csv"
 
-        util.makeBeadsCSV(newPath, 'grayscale', self.colorBeads) # TODO: pass colorFormat into this method
+        util.makeBeadsCSV(newPath, colorFormat, self.colorBeads)

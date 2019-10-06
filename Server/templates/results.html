@@ -532,10 +532,19 @@ SOFTWARE. -->
                         <button id="btn" type="submit" class="btn btn-primary mb-2">Submit</button>
                     </form>
                 </div>
+                <div class="col-3">
+                    <select class="form-control" id="csvFormat">
+                        <option value="rgb">RGB</option>
+                        <option value="hsv">HSV</option>
+                        <option value="cmyk">CMYK</option>
+                        <option value="grayscale">Grayscale</option>
+                    </select>
+                </div>
                 <div class="col-2">
-                    <a href="/resources/uploads/{{resultsDirectory}}/results/beads.csv">
+                    <!-- <a href="/resources/uploads/{{resultsDirectory}}/results/beads.csv">
                         <button title="Download the results." class="btn btn-primary">Download Results</button>
-                    </a>
+                    </a> -->
+                    <button id="csvDownload" title="Download Result Data" class="btn btn-primary">Download Results</button>
                 </div>
                 <div class="col-3">
                     <a href="/resources/uploads/{{resultsDirectory}}/results/result_image.jpg">
@@ -566,6 +575,7 @@ SOFTWARE. -->
                 /*beads = beads.replace(/False/g, "false");
                 beads = beads.replace(/True/g,"true");*/
                 beads = JSON.parse(beads);
+            var resDir = '{{resultsDirectory}}'
         </script>
         <script src='/resources/js/mapInspector.js'></script>
         <script src='/resources/js/results.js'></script>

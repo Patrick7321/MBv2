@@ -175,6 +175,7 @@ $(document).ready(function() {
     });
 
     submit.click(function() {
+        print(imageForm);
         let data = imageUpload.val() != null && imageUpload.val() !== '' ? new FormData(imageForm[0]) : new FormData(videoForm[0]);
         let crushedBeadDetection = crushedBeadCheckbox[0].checked;
         let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}`;

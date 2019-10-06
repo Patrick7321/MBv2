@@ -25,7 +25,7 @@ SOFTWARE.
 #Authors: Jacob Wakefield, Noah Zeilmann, McKenna Gates, Liam Zay
 
 from . import app
-from flask import render_template, send_from_directory, request, url_for, redirect, jsonify
+from flask import render_template, send_from_directory, request, url_for, redirect, jsonify, send_file
 from werkzeug.utils import secure_filename
 from lib.counting import *
 from lib.stitching import *
@@ -50,6 +50,8 @@ class Parameters():
         self.detectionAlgorithm = ''
 
 detectionParams = Parameters()
+
+countingDict = {}
 
 """
     Description: a function used to see if the uploaded file is in a valid format.
@@ -156,11 +158,23 @@ def getResults(directory):
     serverDirectory = 'Server/resources/uploads/' + directory
 
     count = Counting(serverDirectory)
+    countingDict[serverDirectory] = count
 
-    circles = count.getColorBeads(magLevel, detectionParams)
+    circles = countingDict[serverDirectory].getColorBeads(magLevel, detectionParams)
 
-    colorOutputType = request.args.get('colorOutputType') # TODO: use the query parameter colorOutputType, as it is not hooked to frontend
-    count.makeBeadsCSV('placeholder') # TODO: this will be where the colorOutputType query param goes
+    # countingDict[serverDirectory].makeBeadsCSV('rgb') # rgb is default
 
     return render_template('results.html', colorBeads = circles, waterBeads = count.waterBeads,
         crushedBeads = count.crushedBeads, mapLocation = directory, resultsDirectory = resultsDirectory)
+
+@app.route('/getResultReport/<path:directory>')
+def getResultReport(directory):
+    colorOutputType = request.args.get('colorOutputType') # this is the type of output we want
+    resDir = request.args.get('resDir') # this is the directory we are accessing
+    key = 'Server' + request.args.get('key') # this key allows access to the counting dictionary
+    
+    countingDict[key].makeBeadsCSV(colorOutputType) # access the stored counting variable and regen csv data
+
+    uploadDir = 'resources/uploads/' + resDir
+
+    return send_file(uploadDir + '/results/beads.csv')

@@ -28,6 +28,23 @@ SOFTWARE.
 
 $(window).ready(function(){
 
+	let csvFormatSelect = document.getElementById("csvFormat");
+	let csvDownloadButton = document.getElementById("csvDownload");
+
+	csvDownloadButton.addEventListener('click', (e) => {
+		let a = document.createElement('a')
+		const colorOutputType = csvFormatSelect.value;
+
+		a.href = '/getResultReport/' + resDir 
+		a.href = a.href + '?colorOutputType=' + colorOutputType;
+		a.href = a.href + '&resDir=' + resDir;
+		a.href = a.href + '&key=' + mapLocation;
+		
+		document.body.appendChild(a)
+		a.click()
+		document.body.removeChild(a)
+	});
+
 	let beadTableDiv = document.getElementById('resultsDiv'),
 		table = document.createElement('table'),
 		tableHeader = document.createElement('thead'),
