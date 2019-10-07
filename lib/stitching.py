@@ -35,6 +35,7 @@ import multiprocessing as mp
 from collections import OrderedDict
 import imutils
 from imutils import paths
+from . import file_util
 
 """
         Description: a class to deal with stitching images together and handling overlap of the images.
@@ -231,10 +232,7 @@ class Stitching:
 		# Get directory of test images
 		self.sourceDirectory = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", path))
 
-		imagePaths = sorted(list(imutils.paths.list_images(self.sourceDirectory)))
-		for imagePath in imagePaths:
-			image = cv2.imread(imagePath)
-			self.images.append(image)
+		self.images = file_util.readImagesFromDirectory(self.sourceDirectory)
 
 		# Read images and append to image array
 		# current_images = {}
