@@ -114,6 +114,7 @@ var imageObj = undefined; //the stitched map image
                 type = 'Crushed Bead';
                 rgb = 'N/A';
                 ctx.fillStyle = $('#crushedBeadOutline').val();
+                radius = 'N/A';
             } else if (toolTipBead[1] === 'waterBead') {
                 type = 'Water Bead';
                 ctx.fillStyle = $('#waterBeadOutline').val();

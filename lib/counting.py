@@ -35,6 +35,7 @@ import csv
 from enum import Enum
 from os import listdir, path
 from . import util
+from . import colorLabeler
 
 """
     Description: an enum class to handle the HoughCircle configuration values that are used in cv2.HoughCircles().
@@ -123,32 +124,37 @@ class Counting:
 
     def getCrushedBeads(self, image, circles):
         temp_img = self.grayScaleMap.copy()
+
         for i in circles[0,:]:
             # fills in the circle
             cv2.circle(temp_img, (i[0],i[1]) ,i[2], (255,255,255), -1)
             #fills the outer edges of the circle
             cv2.circle(temp_img,(i[0], i[1]), i[2], (255,255,255), 17)
 
+
         blur = cv2.GaussianBlur(temp_img, (19, 19), 0)
+        lab = cv2.cvtColor(self.colorMap, cv2.COLOR_BGR2LAB)
         thresh = cv2.threshold(blur, 225, 255, cv2.THRESH_BINARY_INV)[1]
         img_output, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+        cl = colorLabeler.ColorLabeler()
+
         for c in contours:
-            # calculate moments for each contour
-            M = cv2.moments(c)
+            color = cl.label(lab, c)
 
-           # calculate x,y coordinate of center
-            if M["m00"] != 0:
-                cX = int(M["m10"] / M["m00"])
-                cY = int(M["m01"] / M["m00"])
-            else:
-                cX, cY = 0, 0
+            if color not in cl.colorsToIgnore:
+                cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
 
-            x = self.getBrightestColor([cX, cY, 10])
-            print(x)
-
-            cv2.circle(image, (cX, cY), 5, (0, 0, 255), -1)
-            self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
+                # compute the center of the contour
+                M = cv2.moments(c)
+                if M['m00'] > 0:
+                    cX = int((M["m10"] / M["m00"]))
+                    cY = int((M["m01"] / M["m00"]))
+                    self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
+                else:
+                    cX = 0
+                    cY = 0
+                cv2.circle(image, (cX, cY), 2, (0, 255, 0), 3)
 
     """
         Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]
@@ -212,10 +218,10 @@ class Counting:
 
 
     """
-        Description: 
+        Description:
         @param colorFormat: a string that is either 'rgb', 'hsv', 'cmyk', or 'grayscale'
         @return void, writes file directly from class attributes
-    """ 
+    """
     def makeBeadsCSV(self, colorFormat):
         newPath = self.imagePath
         endIndex = newPath.rfind("/")
