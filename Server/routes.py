@@ -137,11 +137,19 @@ def uploadVideo():
 # accepts a path to the image directory to use for stitching
 @app.route('/getStitchedImage/<path:directory>')
 def getStitchedImage(directory):
-    dirPrefix="Server/resources/uploads/"
-    stitcher = Stitching()
 
-    stitcher.twoRoundStitch(dirPrefix + directory + "/images/", dirPrefix + directory + "/maps/")
-    return render_template('stitched.html', direct=directory)
+    dirPrefix = "Server/resources/uploads/"
+
+    stitcher = Stitching()
+    stitcher.setDirectory(dirPrefix + directory + '/images/')
+    stitcher.setResultsDirectory(dirPrefix + directory + '/maps/')
+
+    (status, statusString) = stitcher.stitchImages_Default()
+
+    return render_template('stitched_single.html', status=status, statusString=statusString, directory=directory)
+
+    #stitcher.twoRoundStitch(dirPrefix + directory + "/images/", dirPrefix + directory + "/maps/")
+    #return render_template('stitched.html', direct=directory)
 
 # accepts a path to the stitched image directory
 @app.route('/getResults/<path:directory>')
