@@ -14,8 +14,7 @@ def readImagesFromDirectory(path):
         # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         # print(image.shape)
         # image = image.astype('uint8')
-        #images.append(image)
-        images.append(cv2.imread(image, cv2.IMREAD_COLOR))
+        images.append(image)
     return images
 
 # method takes a path and image and writes the image to that path
