@@ -10,6 +10,10 @@ def readImagesFromDirectory(path):
     images = []
     for imagePath in imagePaths:
         image = cv2.imread(imagePath)
+        # print(image.shape)
+        # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # print(image.shape)
+        # image = image.astype('uint8')
         images.append(image)
     return images
 
