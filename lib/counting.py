@@ -32,6 +32,7 @@ import random
 import math
 import itertools
 import csv
+import sys
 from enum import Enum
 from os import listdir, path
 from . import util
@@ -76,6 +77,7 @@ class Counting:
         circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,dp=houghConfig["dp"],minDist=houghConfig["minDist"],
                             param1=houghConfig["param1"],param2=houghConfig["param2"],minRadius=houghConfig["minRadius"],maxRadius=houghConfig["maxRadius"])
 
+        
         circles = np.uint16(np.around(circles))
         for i in circles[0,:]:
             # i[0] is x coordinate, i[1] is y coordinate, i[2] is radius
@@ -84,7 +86,17 @@ class Counting:
             # draw the center of the circle
             cv2.circle(cimg,(i[0],i[1]),2,(0,0,255),3)
 
-            color = self.getBrightestColor(i)
+
+            if detectionParams.detectionAlgorithm == "avg":
+                color = self.getAverageColor(i)
+            elif detectionParams.detectionAlgorithm == "mid":
+                color = self.getMiddleColor(i)
+            elif detectionParams.detectionAlgorithm == "corner":
+                color = self.getFourQuadrantColor(i)
+            elif detectionParams.detectionAlgorithm == "rad":
+                color = self.getRadiusAverageColor(i)
+
+
             if(color[1] == 'bead'): # if the bead is a water bead, leave it out.
                 self.colorBeads.append(color)
                 result.append(color)
@@ -196,6 +208,117 @@ class Counting:
         isWater = self.isWater(average)
         type = 'waterBead' if isWater else 'bead'
         return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
+
+
+    def getAverageColor(self, circleInfo):
+        img = self.colorMap
+        imgY = img.shape[0]
+        imgX = img.shape[1]
+        x = circleInfo[0]
+        y = circleInfo[1]
+        radius = circleInfo[2]
+        reds, greens, blues = [], [], []
+
+        points = self.getPointsInCircle(radius, x, y)
+        coordinates = list(points)
+
+        for xCoord, yCoord in coordinates:
+            if (xCoord >= imgX) or (yCoord >= imgY):
+                pass
+            else:
+                bgrValue = img[yCoord, xCoord]
+                reds.append(bgrValue[2])
+                greens.append(bgrValue[1])
+                blues.append(bgrValue[0])
+
+        average = (round(np.mean(reds), 2), round(np.mean(greens), 2), round(np.mean(blues), 2))
+        isWater = self.isWater(average)
+        type = 'waterBead' if isWater else 'bead'
+        return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
+    
+    def getMiddleColor(self, circleInfo):
+        img = self.colorMap
+        imgY = img.shape[0]
+        imgX = img.shape[1]
+        x = circleInfo[0]
+        y = circleInfo[1]
+        radius = circleInfo[2]
+        reds, greens, blues = [], [], []
+
+        points = self.getPointsInCircle(radius/4, x, y)
+        coordinates = list(points)
+
+        for xCoord, yCoord in coordinates:
+            if (xCoord >= imgX) or (yCoord >= imgY):
+                pass
+            else:
+                bgrValue = img[yCoord, xCoord]
+                reds.append(bgrValue[2])
+                greens.append(bgrValue[1])
+                blues.append(bgrValue[0])
+        
+        average = (round(np.mean(reds), 2), round(np.mean(greens), 2), round(np.mean(blues), 2))
+        isWater = self.isWater(average)
+        type = 'waterBead' if isWater else 'bead'
+        return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
+
+
+    def getRadiusAverageColor(self, circleInfo):
+        img = self.colorMap
+        imgY = img.shape[0]
+        imgX = img.shape[1]
+        x = circleInfo[0]
+        y = circleInfo[1]
+        radius = circleInfo[2]
+        reds, greens, blues = [], [], []
+
+        for xCoord in range(x - radius + 5, x + radius - 5):
+            if(xCoord >= imgX):
+                pass
+            else:
+                bgrValue = img[y, xCoord]
+                reds.append(bgrValue[2])
+                greens.append(bgrValue[1])
+                blues.append(bgrValue[0])
+
+        average = (round(np.mean(reds), 2), round(np.mean(greens), 2), round(np.mean(blues), 2))
+        isWater = self.isWater(average)
+        type = 'waterBead' if isWater else 'bead'
+        return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
+            
+        
+    def getFourQuadrantColor(self, circleInfo):
+        img = self.colorMap
+        imgY = img.shape[0]
+        imgX = img.shape[1]
+        x = circleInfo[0]
+        y = circleInfo[1]
+        radius = circleInfo[2]
+        reds, greens, blues = [], [], []
+
+        for i in range(0, 4):
+            currentPoints = self.getPointsInCircle(radius/10, x + math.ceil((radius/2) * math.cos(math.radians(90*i + 45))), y + math.ceil((radius/2) * math.sin(math.radians(90*i + 45))))
+            currentCoordinates = list(currentPoints)
+
+            for xCoord, yCoord in currentCoordinates:
+                if (xCoord >= imgX) or (yCoord >= imgY):
+                    pass
+                else:
+                    bgrValue = img[yCoord, xCoord]
+                    reds.append(bgrValue[2])
+                    greens.append(bgrValue[1])
+                    blues.append(bgrValue[0])
+        
+        average = (round(np.mean(reds), 2), round(np.mean(greens), 2), round(np.mean(blues), 2))
+        isWater = self.isWater(average)
+        type = 'waterBead' if isWater else 'bead'
+        return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
+            
+
+
+        
+
+
 
 
     """
