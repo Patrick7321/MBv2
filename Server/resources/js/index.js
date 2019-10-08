@@ -203,12 +203,12 @@ $(document).ready(function() {
             contentType: false,
             processData: false
         })
-        .done(function(e) {
-            if (e.status === 0) {
+        .done(function(response) {
+            if (response.status === 0) {
                 window.location.href = 'getStitchedImage' + e.location;
             }
             else {
-                postFail();
+                postFail(response);
             }
         })
         .fail(postFail)
@@ -249,14 +249,14 @@ $(document).ready(function() {
         slideHolder.append(placeholder);
     }
 
-    function postFail(e) {
+    function postFail(response) {
         overlay.addClass('d-none');
         createAlert('post-alert', 'An error occured while uploading your files, please try again later.', 'postTimeout');
     }
 
     function noImagesSelected(e) {
         overlay.addCass('d-none');
-        createAlert('no-images-selected', 'Please select images for upload', 'postTimeout');
+        createAlert('no-images-selected', response.msg, 'postTimeout');
     }
 
 });

@@ -42,17 +42,17 @@ from . import file_util
         Description: a class to deal with stitching images together and handling overlap of the images.
 """
 class Stitching: 
-	def __init__(self):
+	def __init__(self, sourceDirectory, resultsDirectory):
 		self.images = []
-		self.sourceDirectory = ""
-		self.resultsDirectory =""
+		self.sourceDirectory = self.setDirectory(sourceDirectory)
+		self.resultsDirectory = resultsDirectory
 		self.results = []
 
 	# method takes an array of cv2 images and stitches the ones that match, ignoring those that do not.
 	# returns a status and a status string
 	def stitchImages_Default(self):
 
-		stitcher = cv2.createStitcher(False)
+		stitcher = cv2.createStitcher(try_use_gpu=False)
 		print(len(self.images))
 		(status, stitched) = stitcher.stitch(self.images)
 
