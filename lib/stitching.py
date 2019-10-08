@@ -47,32 +47,6 @@ class Stitching:
 		self.sourceDirectory = ""
 		self.resultsDirectory =""
 		self.results = []
-		
-
-	"""
-		Description: a function for creating a stitched image from ordered images.
-		@return A stitched image.
-	"""
-	def stitchOrderedImages(self):
-		# Create stitcher and stitch images
-		stitcher = cv2.createStitcher(True)
-		status, image = stitcher.stitch(self.images)
-
-		if status == cv2.STITCHER_OK:
-			# Get results directory 
-			imagePath = os.path.join(self.resultsDirectory, "stiched_image.jpg")
-
-			# Check if results directory exist, if not create it
-			if not os.path.exists(self.resultsDirectory):
-				os.makedirs(self.resultsDirectory)
-
-			# Save image in results directory
-			cv2.imwrite(imagePath, image)
-
-			return image
-		else:
-			print('Error during stiching')
-			return False
 
 	# method takes an array of cv2 images and stitches the ones that match, ignoring those that do not.
 	# returns a status and a status string
@@ -83,6 +57,7 @@ class Stitching:
 		(status, stitched) = stitcher.stitch(self.images)
 
 		if status != 0: 
+			print(status)
 			blank_image = np.zeros((50, 50, 3), np.uint8)
 			file_util.writeImage(self.resultsDirectory + 'result_default.jpg', blank_image)
 			return (status, 'An error occured while stitching.')
