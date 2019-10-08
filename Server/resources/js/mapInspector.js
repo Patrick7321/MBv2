@@ -88,7 +88,7 @@ var imageObj = undefined; //the stitched map image
         if(toolTipBead){
             const canvas = $('#mapCanvas');
             const location = `(${Math.round(toolTipBead[2][0])}, ${Math.round(toolTipBead[2][1])})`;
-            const radius = Math.round(toolTipBead[2][2]);
+            let radius = Math.round(toolTipBead[2][2]);
             let type = '';
             let rgb = `(${Math.round(toolTipBead[0][0])}, ${Math.round(toolTipBead[0][1])}, ${Math.round(toolTipBead[0][2])})`;
             var rectWidth = 325,

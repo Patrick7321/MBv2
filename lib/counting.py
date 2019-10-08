@@ -36,7 +36,7 @@ import sys
 from enum import Enum
 from os import listdir, path
 from . import util
-from . import colorLabeler
+from . import color_labeler
 
 """
     Description: an enum class to handle the HoughCircle configuration values that are used in cv2.HoughCircles().
@@ -148,7 +148,7 @@ class Counting:
         thresh = cv2.threshold(blur, 225, 255, cv2.THRESH_BINARY_INV)[1]
         img_output, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        cl = colorLabeler.ColorLabeler()
+        cl = color_labeler.ColorLabeler()
 
         for c in contours:
             color = cl.label(lab, c)
