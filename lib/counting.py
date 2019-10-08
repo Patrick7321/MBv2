@@ -36,6 +36,7 @@ import sys
 from enum import Enum
 from os import listdir, path
 from . import util
+from . import color_labeler
 
 """
     Description: an enum class to handle the HoughCircle configuration values that are used in cv2.HoughCircles().
@@ -76,7 +77,6 @@ class Counting:
         circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,dp=houghConfig["dp"],minDist=houghConfig["minDist"],
                             param1=houghConfig["param1"],param2=houghConfig["param2"],minRadius=houghConfig["minRadius"],maxRadius=houghConfig["maxRadius"])
 
-        
         circles = np.uint16(np.around(circles))
         for i in circles[0,:]:
             # i[0] is x coordinate, i[1] is y coordinate, i[2] is radius
@@ -134,32 +134,37 @@ class Counting:
 
     def getCrushedBeads(self, image, circles):
         temp_img = self.grayScaleMap.copy()
+
         for i in circles[0,:]:
             # fills in the circle
             cv2.circle(temp_img, (i[0],i[1]) ,i[2], (255,255,255), -1)
             #fills the outer edges of the circle
             cv2.circle(temp_img,(i[0], i[1]), i[2], (255,255,255), 17)
 
+
         blur = cv2.GaussianBlur(temp_img, (19, 19), 0)
+        lab = cv2.cvtColor(self.colorMap, cv2.COLOR_BGR2LAB)
         thresh = cv2.threshold(blur, 225, 255, cv2.THRESH_BINARY_INV)[1]
         img_output, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+        cl = color_labeler.ColorLabeler()
+
         for c in contours:
-            # calculate moments for each contour
-            M = cv2.moments(c)
+            color = cl.label(lab, c)
 
-           # calculate x,y coordinate of center
-            if M["m00"] != 0:
-                cX = int(M["m10"] / M["m00"])
-                cY = int(M["m01"] / M["m00"])
-            else:
-                cX, cY = 0, 0
+            if color not in cl.colorsToIgnore:
+                cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
 
-            x = self.getBrightestColor([cX, cY, 10])
-            print(x)
-
-            cv2.circle(image, (cX, cY), 5, (0, 0, 255), -1)
-            self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
+                # compute the center of the contour
+                M = cv2.moments(c)
+                if M['m00'] > 0:
+                    cX = int((M["m10"] / M["m00"]))
+                    cY = int((M["m01"] / M["m00"]))
+                    self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
+                else:
+                    cX = 0
+                    cY = 0
+                cv2.circle(image, (cX, cY), 2, (0, 255, 0), 3)
 
     """
         Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]
@@ -232,7 +237,7 @@ class Counting:
         isWater = self.isWater(average)
         type = 'waterBead' if isWater else 'bead'
         return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
-    
+
     def getMiddleColor(self, circleInfo):
         img = self.colorMap
         imgY = img.shape[0]
@@ -253,7 +258,7 @@ class Counting:
                 reds.append(bgrValue[2])
                 greens.append(bgrValue[1])
                 blues.append(bgrValue[0])
-        
+
         average = (round(np.mean(reds), 2), round(np.mean(greens), 2), round(np.mean(blues), 2))
         isWater = self.isWater(average)
         type = 'waterBead' if isWater else 'bead'
@@ -282,8 +287,8 @@ class Counting:
         isWater = self.isWater(average)
         type = 'waterBead' if isWater else 'bead'
         return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
-            
-        
+
+
     def getFourQuadrantColor(self, circleInfo):
         img = self.colorMap
         imgY = img.shape[0]
@@ -305,18 +310,11 @@ class Counting:
                     reds.append(bgrValue[2])
                     greens.append(bgrValue[1])
                     blues.append(bgrValue[0])
-        
+
         average = (round(np.mean(reds), 2), round(np.mean(greens), 2), round(np.mean(blues), 2))
         isWater = self.isWater(average)
         type = 'waterBead' if isWater else 'bead'
         return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
-            
-
-
-        
-
-
-
 
     """
         Description: a function that takes a bead's radius and x and y coordinates of the center and returns coordinates of every point in
@@ -334,10 +332,10 @@ class Counting:
 
 
     """
-        Description: 
+        Description:
         @param colorFormat: a string that is either 'rgb', 'hsv', 'cmyk', or 'grayscale'
         @return void, writes file directly from class attributes
-    """ 
+    """
     def makeBeadsCSV(self, colorFormat):
         newPath = self.imagePath
         endIndex = newPath.rfind("/")
