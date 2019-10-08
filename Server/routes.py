@@ -103,8 +103,8 @@ def getResults(directory):
     countingDict[directory] = Counting(serverDirectory) # save the counting object in a dictionary for regeneration of report data
     colorBeads = countingDict[directory].getColorBeads(magLevel, detectionParams)
 
-    return render_template('results.html', colorBeads = colorBeads, waterBeads = count.waterBeads,
-        crushedBeads = count.crushedBeads, mapLocation = directory, resultsDirectory = resultsDirectory)
+    return render_template('results.html', colorBeads = colorBeads, waterBeads = countingDict[directory].waterBeads,
+        crushedBeads = countingDict[directory].crushedBeads, mapLocation = directory, resultsDirectory = resultsDirectory)
 
 @app.route('/getResultReport/<path:directory>')
 def getResultReport(directory):
