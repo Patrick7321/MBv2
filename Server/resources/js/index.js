@@ -180,7 +180,13 @@ $(document).ready(function() {
     });
 
     submit.click(function() {
-        let data = imageUpload.val() != null && imageUpload.val() !== '' ? new FormData(imageForm[0]) : new FormData(videoForm[0]);
+
+        if (imageUpload.val() == null) {
+            noImagesSelected();
+            return;
+        }
+        
+        let data = new FormData(imageForm[0]);
         let crushedBeadDetection = crushedBeadCheckbox[0].checked;
         let selectedColorAlgorithm = colorAlgorithm.value;
         let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}&colorAlgorithm=${selectedColorAlgorithm}`;
@@ -247,4 +253,10 @@ $(document).ready(function() {
         overlay.addClass('d-none');
         createAlert('post-alert', 'An error occured while uploading your files, please try again later.', 'postTimeout');
     }
+
+    function noImagesSelected(e) {
+        overlay.addCass('d-none');
+        createAlert('no-images-selected', 'Please select images for upload', 'postTimeout');
+    }
+
 });

@@ -33,6 +33,9 @@ from PIL import Image, ExifTags
 import shutil
 import multiprocessing as mp
 from collections import OrderedDict
+import imutils
+from imutils import paths
+from . import file_util
 
 """
         Description: a class to deal with stitching images together and handling overlap of the images.
@@ -69,6 +72,13 @@ class Stitching:
 		else:
 			print('Error during stiching')
 			return False
+
+	# method takes an array of cv2 images and stitches the ones that match, ignoring those that do not.
+	# returns a status and a stitched image
+	def stitchImagesStitcher(self, images):
+		stitcher = cv2.createStitcherScans(try_use_gpu=False)
+		(status, stitched) = stitcher.stitch(images)
+		return status, stitched
 
 	"""
 		Description: a function for creating a stitched image from unordered images.
@@ -222,17 +232,19 @@ class Stitching:
 		# Get directory of test images
 		self.sourceDirectory = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", path))
 
+		self.images = file_util.readImagesFromDirectory(self.sourceDirectory)
+
 		# Read images and append to image array
-		current_images = {}
-		for file in os.listdir(self.sourceDirectory):			
-			if(file.find('jpg') != -1 or file.find('JPG') != -1):
-				path = os.path.join(self.sourceDirectory, file)
-				img = Image.open(path)
-				exif = { ExifTags.TAGS[k]: v for k, v in img._getexif().items() if k in ExifTags.TAGS }
-				current_images[path] = exif['DateTimeOriginal']
-		sorted_by_value = sorted(current_images.items(), key=lambda kv: kv[1])
-		for key in sorted_by_value:
-			self.images.append(cv2.imread(key[0], cv2.IMREAD_COLOR))
+		# current_images = {}
+		# for file in os.listdir(self.sourceDirectory):			
+		# 	if(file.find('jpg') != -1 or file.find('JPG') != -1):
+		# 		path = os.path.join(self.sourceDirectory, file)
+		# 		img = Image.open(path)
+		# 		exif = { ExifTags.TAGS[k]: v for k, v in img._getexif().items() if k in ExifTags.TAGS }
+		# 		current_images[path] = exif['DateTimeOriginal']
+		# sorted_by_value = sorted(current_images.items(), key=lambda kv: kv[1])
+		# for key in sorted_by_value:
+		# 	self.images.append(cv2.imread(key[0], cv2.IMREAD_COLOR))
 			
 
 		
