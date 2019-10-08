@@ -94,12 +94,15 @@ def error():
 def uploadImages():
     images = request.files.getlist("images")
     wantsCrushed = request.args['wantsCrushed']
+    colorAlgoritm = request.args['colorAlgorithm']
 
     if wantsCrushed == 'true': # changing the js boolean to a python boolean
         detectionParams.wantsCrushedBeads = True
     else:
         detectionParams.wantsCrushedBeads = False
 
+    detectionParams.detectionAlgorithm = colorAlgoritm
+    
     newDir = setupUploadDir()
 
     for i in images:

@@ -55,6 +55,11 @@ $(document).ready(function() {
     minBeadValue.innerText = minSizeSlider.value;
     maxBeadValue.innerText = maxSizeSlider.value;
 
+    let colorAlgorithm = document.getElementById('color-algorithm-selection')
+
+
+
+
     minSizeSlider.oninput = function() {
         minBeadValue.innerHTML = this.value;
     }
@@ -183,8 +188,10 @@ $(document).ready(function() {
         
         let data = new FormData(imageForm[0]);
         let crushedBeadDetection = crushedBeadCheckbox[0].checked;
-        let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}`;
+        let selectedColorAlgorithm = colorAlgorithm.value;
+        let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}&colorAlgorithm=${selectedColorAlgorithm}`;
 
+        console.log("URL: " + url);
         overlay.removeClass('d-none');
 
         $.ajax({
