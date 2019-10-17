@@ -205,7 +205,7 @@ $(document).ready(function() {
         })
         .done(function(response) {
             if (response.status === 0) {
-                window.location.href = 'getStitchedImage' + e.location;
+                window.location.href = 'getStitchedImage' + response.location;
             }
             else {
                 postFail(response);

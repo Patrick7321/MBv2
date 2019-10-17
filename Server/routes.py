@@ -85,7 +85,7 @@ def getStitchedImage(directory):
     dirPrefix = 'Server/resources/uploads/' + directory
     stitcher = Stitching(dirPrefix + '/images/', dirPrefix + '/maps/')
     (status, statusString) = stitcher.stitchImages_Default()
-
+    
     return render_template('stitched_single.html', status=status, statusString=statusString, directory=directory)
 
     #stitcher.twoRoundStitch(dirPrefix + directory + "/images/", dirPrefix + directory + "/maps/")
