@@ -115,4 +115,4 @@ def getResultReport(directory):
 
     uploadDir = 'resources/uploads/' + resDir
 
-    return send_file(uploadDir + '/results/beads.csv')
+    return send_file(uploadDir + '/results/beads.csv', as_attachment=True)
