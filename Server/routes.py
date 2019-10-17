@@ -100,11 +100,11 @@ def getResults(directory):
     resultsDirectory = directory.split("/")[0]
     serverDirectory = 'Server/resources/uploads/' + directory
 
-    countingDict[directory] = Counting(serverDirectory) # save the counting object in a dictionary for regeneration of report data
-    colorBeads = countingDict[directory].getColorBeads(magLevel, detectionParams)
+    countingDict[resultsDirectory] = Counting(serverDirectory) # save the counting object in a dictionary for regeneration of report data
+    colorBeads = countingDict[resultsDirectory].getColorBeads(magLevel, detectionParams)
 
-    return render_template('results.html', colorBeads = colorBeads, waterBeads = countingDict[directory].waterBeads,
-        crushedBeads = countingDict[directory].crushedBeads, mapLocation = directory, resultsDirectory = resultsDirectory)
+    return render_template('results.html', colorBeads = colorBeads, waterBeads = countingDict[resultsDirectory].waterBeads,
+        crushedBeads = countingDict[resultsDirectory].crushedBeads, mapLocation = directory, resultsDirectory = resultsDirectory)
 
 @app.route('/getResultReport/<path:directory>')
 def getResultReport(directory):
