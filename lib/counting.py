@@ -77,7 +77,6 @@ class Counting:
         circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,dp=houghConfig["dp"],minDist=houghConfig["minDist"],
                             param1=houghConfig["param1"],param2=houghConfig["param2"],minRadius=houghConfig["minRadius"],maxRadius=houghConfig["maxRadius"])
 
-
         circles = np.uint16(np.around(circles))
         for i in circles[0,:]:
             # i[0] is x coordinate, i[1] is y coordinate, i[2] is radius
@@ -316,13 +315,6 @@ class Counting:
         isWater = self.isWater(average)
         type = 'waterBead' if isWater else 'bead'
         return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
-
-
-
-
-
-
-
 
     """
         Description: a function that takes a bead's radius and x and y coordinates of the center and returns coordinates of every point in
