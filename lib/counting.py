@@ -36,7 +36,7 @@ import sys
 from enum import Enum
 from os import listdir, path
 from . import util
-from . import color_labeler
+from . import colorLabeler
 
 """
     Description: an enum class to handle the HoughCircle configuration values that are used in cv2.HoughCircles().
@@ -58,6 +58,7 @@ class Counting:
         self.imagePath = imagePath
         self.grayScaleMap = cv2.imread(imagePath,0) # create grayscale cv2 img
         self.colorMap = cv2.imread(imagePath) # create color cv2 img
+        self.labMap = cv2.cvtColor(self.colorMap, cv2.COLOR_BGR2Lab)
         self.colorBeads = []
         self.waterBeads = []
         self.crushedBeads = []
@@ -103,7 +104,7 @@ class Counting:
                 self.waterBeads.append(color)
 
         if detectionParams.wantsCrushedBeads: # if the user wants to detect crushed beads.
-            self.getCrushedBeads(cimg, circles)
+            self.getCrushedBeads(cimg)
 
         imagePath = '/'.join(self.imagePath.split('/')[:-2]) + '/results/'
         imagePath += 'result_image.jpg'#+ str(fileNum) +'.jpg'
@@ -132,39 +133,83 @@ class Counting:
             isWater = True
         return isWater
 
-    def getCrushedBeads(self, image, circles):
-        temp_img = self.grayScaleMap.copy()
+    """
+    Description: does preprocessing on the image map to find the crushed beads.
+    @param image - image that will have the final results of the counting
+    """
+    def getCrushedBeads(self, image):
+        mask = np.ones(image.shape[:2], dtype="uint8")
+        knownObjects = self.colorBeads + self.waterBeads
 
-        for i in circles[0,:]:
+        # takes the known objects (beads and water beads) and colors them black
+        # so they can be ignored when detecting the crushed beads
+        for bead in knownObjects:
             # fills in the circle
-            cv2.circle(temp_img, (i[0],i[1]) ,i[2], (255,255,255), -1)
+            cv2.circle(mask, (bead[2][0],bead[2][1]), bead[2][2], (0,0,0), -1)
             #fills the outer edges of the circle
-            cv2.circle(temp_img,(i[0], i[1]), i[2], (255,255,255), 17)
+            cv2.circle(mask, (bead[2][0],bead[2][1]), bead[2][2], (0,0,0), 17)
 
+        color = cv2.bitwise_and(self.colorMap, self.colorMap, mask=mask)
 
-        blur = cv2.GaussianBlur(temp_img, (19, 19), 0)
-        lab = cv2.cvtColor(self.colorMap, cv2.COLOR_BGR2LAB)
+        # gathers the locations for the white background and
+        # colors it white so it won't affect the contour detection
+        minBg = (235, 235, 235)
+        maxBg = (255, 255, 255)
+        self.removeImgAspect(color, minBg, maxBg)
+
+        # gathers the locations of the black areas from stitching and
+        # colors it white so it won't affect the contour detection
+        minBlack = (0, 0, 0)
+        maxBlack = (10, 10, 10)
+        self.removeImgAspect(color, minBlack, maxBlack)
+
+        lab = cv2.cvtColor(color, cv2.COLOR_BGR2LAB)
+
+        # gathers the locations of the black borders around the beads and
+        # colors it white so it won't affect the contour detection
+        minBorder = (0, 0, 0)
+        maxBorder = (180, 190, 130)
+        self.removeImgAspect(lab, minBorder, maxBorder, drawing=color)
+
+        gray = cv2.cvtColor(color, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (31, 31), 0)
         thresh = cv2.threshold(blur, 225, 255, cv2.THRESH_BINARY_INV)[1]
-        img_output, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        cl = color_labeler.ColorLabeler()
+        imgOutput, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cl = colorLabeler.ColorLabeler()
 
         for c in contours:
-            color = cl.label(lab, c)
+            color_label = cl.label(self.labMap, c)
+            if color_label not in cl.colorsToIgnore:
+                cv2.drawContours(image, [c], -1, (255, 0, 0), 4)
 
-            if color not in cl.colorsToIgnore:
-                cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
-
-                # compute the center of the contour
                 M = cv2.moments(c)
                 if M['m00'] > 0:
                     cX = int((M["m10"] / M["m00"]))
                     cY = int((M["m01"] / M["m00"]))
                     self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
                 else:
-                    cX = 0
-                    cY = 0
-                cv2.circle(image, (cX, cY), 2, (0, 255, 0), 3)
+                    cX = cY = 0
+                cv2.circle(image, (cX, cY), 2, (255, 0, 0), 3)
+
+    """
+    Description: Gets the locations of pixels within a given bound and colors
+    them white so they will not be picked up during image detection
+    @param img - the image used to find the pixels withing a given range
+    @param minBound - the lower bound of a pixel's color intensity
+    @param maxBound - the upper bound of a pixel's color intensity
+    @param drawing - an optional parameter in case the image the results need to be drawn on
+                     is different than the image the range detection was performed on.
+    """
+    def removeImgAspect(self, img, minBound, maxBound, drawing=[]):
+        # if no drawing image is given then it becomes the original img
+        if len(drawing) == 0:
+            drawing = img
+
+        aspect = cv2.inRange(img, minBound, maxBound)
+        imgOutput, contours, hierarchy = cv2.findContours(aspect, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        for c in contours:
+            cv2.drawContours(drawing, [c], -1, (255, 255, 255), -1)
 
     """
         Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]
