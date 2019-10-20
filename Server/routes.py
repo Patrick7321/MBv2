@@ -72,7 +72,7 @@ def uploadImagesAndConfigure():
     images = request.files.getlist("images")
 
     newDir = file_util.createUploadDir()
-    if not checkImagesAndSaveToDirectory(images, newDir):
+    if not file_util.checkImagesAndSaveToDirectory(images, newDir):
         return jsonify({"status": 1, "msg": "One or more of the images that were uploaded are in the incorrect format. Accepted formats: " \
                          + (", ".join(file_util.ALLOWED_IMAGE_EXTENSIONS))})
 
