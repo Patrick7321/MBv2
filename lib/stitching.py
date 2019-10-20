@@ -52,18 +52,24 @@ class Stitching:
 	# returns a status and a status string
 	def stitchImages_Default(self):
 
-		stitcher = cv2.createStitcher(try_use_gpu=False)
-		print(len(self.images))
-		(status, stitched) = stitcher.stitch(self.images)
+		if(len(self.images) < 2):
+			file_util.writeImage(self.resultsDirectory + 'result_default.jpg', self.images[0])
+			return (0, 'single')
+		
+		else:
+			stitcher = cv2.createStitcher(False)
+			print(len(self.images))
+			(status, stitched) = stitcher.stitch(self.images)
 
-		if status != 0: 
-			print(status)
-			blank_image = np.zeros((50, 50, 3), np.uint8)
-			file_util.writeImage(self.resultsDirectory + 'result_default.jpg', blank_image)
-			return (status, 'An error occured while stitching.')
+			if status != 0: 
+				print(status)
+				blank_image = np.zeros((50, 50, 3), np.uint8)
+				file_util.writeImage(self.resultsDirectory + 'result_default.jpg', blank_image)
+				return (status, 'An error occured while stitching.')
 
-		file_util.writeImage(self.resultsDirectory + 'result_default.jpg', stitched)
-		return (status, 'Success.')
+			file_util.writeImage(self.resultsDirectory + 'result_default.jpg', stitched)
+			return (status, 'Success.')
+
 
 	"""
 		Description: a function for creating a stitched image from unordered images.

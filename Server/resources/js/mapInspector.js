@@ -133,6 +133,9 @@ var imageObj = undefined; //the stitched map image
             // fill in the object information (rgb, location, radius) into the textbox
             ctx.fillText(information, rectX + 10, rectY + (rectHeight / 1.5), rectX + rectWidth);
         }
+        else {
+            redraw(ctx);
+        }
     };
 
     /*
