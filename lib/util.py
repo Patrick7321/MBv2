@@ -57,25 +57,24 @@ def writeOutputHsv(writer, colorBeads):
 def writeOutputCmyk(writer, colorBeads): 
     i = 1
     for bead in colorBeads: 
-        cmyk = rgbToCmyk(bead[0][0], bead[0][1], bead[0][2]) # here, the colorsys conversion function expects values between 0-1 for rgb
-        c = cmyk[0]; m = cmyk[1]; y = cmyk[2]; k = cmyk[3] # the returned values are placed in an array in the order c, m, y, k
+        cmyk = rgbToCmyk(bead[0][0], bead[0][1], bead[0][2])
+        C = cmyk[0]; M = cmyk[1]; Y = cmyk[2]; K = cmyk[3] # the returned values are placed in an array in the order c, m, y, k
 
         x = bead[2][0]; y = bead[2][1]
         radius = bead[2][2]
 
-        writer.writerow([i, c, m, y, k, x, y, radius]) # row is written with beadNum, h, s, v, x, y, radius
+        writer.writerow([i, C, M, Y, K, x, y, radius]) # row is written with beadNum, c, m, y, k, x, y, radius
         i += 1
 
 def writeOutputGrayscale(writer, colorBeads):
     i = 1
     for bead in colorBeads:
         grayscaleValue = listAverage(bead[0])
-        r = grayscaleValue; g = grayscaleValue; b = grayscaleValue
 
         x = bead[2][0]; y = bead[2][1]
         radius = bead[2][2]
         
-        writer.writerow([i, r, g, b, x, y, radius]) # row is written with beadNum, r, g, b, x, y, radius
+        writer.writerow([i, grayscaleValue, x, y, radius]) # row is written with beadNum, grayscaleValue, x, y, radius
         i += 1
 
 def listAverage(lst): 
@@ -88,20 +87,19 @@ def listAverage(lst):
 def rgbToCmyk(r,g,b):
     cmyk_scale = 100
 
-    if (r == 0) and (g == 0) and (b == 0):
-        # black
+    if (r + g + b) == 0: # bead is black
         return 0, 0, 0, cmyk_scale
 
     # rgb [0,255] -> cmy [0,1]
-    c = 1 - r / 255.
-    m = 1 - g / 255.
-    y = 1 - b / 255.
+    c = 1 - (r / 255.)
+    m = 1 - (g / 255.)
+    y = 1 - (b / 255.)
 
     # extract out k [0,1]
     min_cmy = min(c, m, y)
-    c = (c - min_cmy) / (1 - min_cmy)
-    m = (m - min_cmy) / (1 - min_cmy)
-    y = (y - min_cmy) / (1 - min_cmy)
+    c = (c - min_cmy) # / (1 - min_cmy)
+    m = (m - min_cmy) # / (1 - min_cmy)
+    y = (y - min_cmy) # / (1 - min_cmy)
     k = min_cmy
 
     # rescale to the range [0,cmyk_scale]
