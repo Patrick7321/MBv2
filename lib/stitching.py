@@ -54,7 +54,7 @@ class Stitching:
 
 		if(len(self.images) < 2):
 			file_util.writeImage(self.resultsDirectory + 'result_default.jpg', self.images[0])
-			return ('OK', 'Success.')
+			return (0, 'single')
 		
 		else:
 			stitcher = cv2.createStitcher(False)

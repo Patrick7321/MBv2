@@ -145,6 +145,16 @@ SOFTWARE. -->
                                 </div>
                             </div>
 
+                            <div class='row setting-row d-none' id="mag">
+                                <div class='col-4'>Magnification</div>
+                                <div class='col-3'>
+                                    <select id='mag-select' class="custom-select" aria-describedby="mag-label">
+                                        <option value="4x">4x</option>
+                                        <option value="10x">10x</option>
+                                    </select>
+                                </div>
+                            </div>
+
 
                         </div>
                     </div>
@@ -152,7 +162,8 @@ SOFTWARE. -->
             </div>
             <div class='row'>
                 <div class='col-6 offset-3 my-3'>
-                    <button id='submit' class='btn btn-primary btn-lg btn-block' disabled>Upload</button>
+                    <button id='multiple-submit' class='btn btn-primary btn-lg btn-block d-none'>Upload Multiple Images</button>
+                    <button id='single-submit' class='btn btn-primary btn-lg btn-block d-none'>Upload Single Image / Map</button>
                 </div>
             </div>
         </div>

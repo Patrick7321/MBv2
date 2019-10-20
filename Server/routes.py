@@ -43,6 +43,7 @@ class Parameters():
         self.beadUpperBound = 0
         self.beadLowerBound = 0
         self.detectionAlgorithm = ''
+        self.magnificationLevel = ''
 
 detectionParams = Parameters()
 
@@ -68,6 +69,9 @@ def uploadImagesAndConfigure():
 
     detectionParams.wantsCrushedBeads = True if request.args['wantsCrushed'] == 'true' else False # convert js 'bool' to python Bool
     detectionParams.detectionAlgorithm = request.args['colorAlgorithm']
+
+    if 'maglevel' in request.args:
+        detectionParams.magnificationLevel = request.args['maglevel']
     
     images = request.files.getlist("images")
 
@@ -76,17 +80,21 @@ def uploadImagesAndConfigure():
         return jsonify({"status": 1, "msg": "One or more of the images that were uploaded are in the incorrect format. Accepted formats: " \
                          + (", ".join(file_util.ALLOWED_IMAGE_EXTENSIONS))})
 
+
     return jsonify({"status": 0, "msg": "Success","location": newDir.replace("Server/resources/uploads","")}) # redirect to homepage
 
 # accepts a path to the image directory to use for stitching
-@app.route('/getStitchedImage/<path:directory>')
-def getStitchedImage(directory):
+@app.route('/getStitchedImage/<path:stitchDirectory>')
+def getStitchedImage(stitchDirectory):
 
-    dirPrefix = 'Server/resources/uploads/' + directory
+    dirPrefix = 'Server/resources/uploads/' + stitchDirectory
     stitcher = Stitching(dirPrefix + '/images/', dirPrefix + '/maps/')
     (status, statusString) = stitcher.stitchImages_Default()
-    
-    return render_template('stitched_single.html', status=status, statusString=statusString, directory=directory)
+
+    if(statusString == "single"):
+        return redirect(url_for('getResults', directory = stitchDirectory + '/maps/result_default.jpg'))
+    else:
+        return render_template('stitched_single.html', status=status, statusString=statusString, directory=stitchDirectory)
 
     #stitcher.twoRoundStitch(dirPrefix + directory + "/images/", dirPrefix + directory + "/maps/")
     #return render_template('stitched.html', direct=directory)
@@ -95,7 +103,13 @@ def getStitchedImage(directory):
 @app.route('/getResults/<path:directory>')
 def getResults(directory): 
 
-    magLevel = HoughConfig.OBJX4 if request.args.get('maglevel') == '4x' else HoughConfig.OBJX10
+    magLevel = ''
+    if request.args.get('maglevel') == '4x' or detectionParams.magnificationLevel == '4x':
+        magLevel = HoughConfig.OBJX4
+    else:
+        magLevel = HoughConfig.OBJX10
+
+
 
     resultsDirectory = directory.split("/")[0]
     serverDirectory = 'Server/resources/uploads/' + directory

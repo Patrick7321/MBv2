@@ -27,7 +27,8 @@ SOFTWARE.
 
 'use-strict'
 $(document).ready(function() {
-    let submit = $('#submit'),
+    let singleSubmit = $('#single-submit'),
+        multipleSubmit = $('#multiple-submit'),
         imageForm = $('#image-form'),
         videoForm = $('#video-form'),
         cancelImages = $('#cancel-images'),
@@ -38,7 +39,7 @@ $(document).ready(function() {
         slideHolder = $('#slide-holder'),
         videoHolder = $('#video-holder'),
         alertContainer = $('#alert-container'),
-        crushedBeadCheckbox = $('#crushed-bead-checkbox')
+        crushedBeadCheckbox = $('#crushed-bead-checkbox'),
         overlay = $('#overlay'),
         timeoutMgr = {
             imgFormatTimeout: null,
@@ -55,10 +56,9 @@ $(document).ready(function() {
     minBeadValue.innerText = minSizeSlider.value;
     maxBeadValue.innerText = maxSizeSlider.value;
 
-    let colorAlgorithm = document.getElementById('color-algorithm-selection')
+    let colorAlgorithm = document.getElementById('color-algorithm-selection');
 
-
-
+    let magSelect = document.getElementById('mag-select');
 
     minSizeSlider.oninput = function() {
         minBeadValue.innerHTML = this.value;
@@ -77,11 +77,26 @@ $(document).ready(function() {
         let invalidFiles;
 
         cancelImagePreview();
-        cancelVideo.click();
 
         invalidFiles = Array.from(this.files).filter(function(file) {
             return !(file.name.endsWith('.jpg') || file.name.endsWith('.jpeg'));
         });
+
+        if(this.files.length > 0) {
+            if(this.files.length == 1) {
+                $('#multiple-submit').addClass('d-none');
+                $('#single-submit').removeClass('d-none');
+                $('#mag').removeClass('d-none');
+            } else {
+                $('#multiple-submit').removeClass('d-none');
+                $('#single-submit').addClass('d-none');
+                $('#mag').addClass('d-none');
+            }
+        } else {
+            $('#multiple-submit').addClass('d-none');
+            $('#single-submit').addClass('d-none');
+            $('#mag').addClass('d-none');
+        }
 
         if (this.files.length > 0 && invalidFiles.length === 0) {
             if (this.files.length > 1) {
@@ -90,7 +105,6 @@ $(document).ready(function() {
             }
 
             cancelImages.prop('disabled', false);
-            submit.prop('disabled', false);
             $('#image-label').text(this.files.length + ' images selected');
 
             $.each(this.files, function(idx, file) {
@@ -127,59 +141,53 @@ $(document).ready(function() {
         }
     });
 
-    videoUpload.change(function(e) {
-        cancelImages.click();
-
-        if (this.files[0].name.endsWith('.avi')) {
-            videoSource[0].src = URL.createObjectURL(this.files[0]);
-            videoSource.parent()[0].load();
-            videoSource.parent().removeClass('d-none');
-            videoUpload.parent().parent().addClass('selected-vid');
-
-            if ($('#video-placeholder')) {
-                $('#video-placeholder').remove();
-                prevSrc = videoSource[0].src;
-            }
-            else {
-                URL.revokeObjectURL(prevSrc);
-            }
-
-            $('#video-label').text(this.files[0].name);
-
-            cancelVideo.prop('disabled', false);
-            submit.prop('disabled', false);
-        }
-        else {
-            createAlert('video-alert', 'Only video files of format .avi are allowed', 'videoFormatTimeout');
-            this.value = null;
-        }
-    });
-
-    cancelVideo.click(function() {
-        if (videoUpload.val() != null && videoUpload.val() !== '') {
-            let placeholder = $('<img id="video-placeholder" class="d-block w-100" src="/resources/imgs/no-video.jpg" alt="No Video"/>');
-
-            cancelVideo.prop('disabled', true);
-            submit.prop('disabled', true);
-            $('#video-label').text('Choose video');
-
-            URL.revokeObjectURL(videoSource[0].src);
-            videoSource[0].src = '';
-            videoSource.parent()[0].load();
-            videoSource.parent().addClass('d-none');
-            videoUpload.parent().parent().removeClass('selected-vid');
-            videoUpload.val(null);
-
-            videoHolder.prepend(placeholder);
-        }
-    });
 
     cancelImages.click(function() {
         cancelImagePreview();
+        $('#multiple-submit').addClass('d-none');
+        $('#single-submit').addClass('d-none');
         imageUpload.val(null);
     });
 
-    submit.click(function() {
+
+    singleSubmit.click(function() {
+
+        if (imageUpload.val() == null) {
+            noImagesSelected();
+            return;
+        }
+        
+        let data = new FormData(imageForm[0]);
+        let crushedBeadDetection = crushedBeadCheckbox[0].checked;
+        let selectedColorAlgorithm = colorAlgorithm.value;
+        let magnificationLevel = magSelect.value;
+        let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}&colorAlgorithm=${selectedColorAlgorithm}&maglevel=${magnificationLevel}`;
+
+        console.log("URL: " + url);
+        overlay.removeClass('d-none');
+
+        $.ajax({
+            method: 'POST',
+            url: url,
+            enctype: 'multipart/form-data',
+            data: data,
+            cache: false,
+            contentType: false,
+            processData: false
+        })
+        .done(function(response) {
+            if (response.status === 0) {
+                window.location.href = 'getStitchedImage' + response.location;
+            }
+            else {
+                postFail(response);
+            }
+        })
+        .fail(postFail)
+    });
+
+
+    multipleSubmit.click(function() {
 
         if (imageUpload.val() == null) {
             noImagesSelected();
@@ -236,7 +244,6 @@ $(document).ready(function() {
         let placeholder = $('<div class="carousel-item active"><img id="img-placeholder" class="d-block w-100" src="/resources/imgs/no-slides.jpg" alt="No Slides"></div>');
 
         cancelImages.prop('disabled', true);
-        submit.prop('disabled', true);
         $('.carousel-control-prev').addClass('d-none');
         $('.carousel-control-next').addClass('d-none');
         $('#image-label').text('Choose images');
