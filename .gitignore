@@ -7,3 +7,4 @@ uploads/
 .vscode
 venv/
 mbv2/
+*.pyc
