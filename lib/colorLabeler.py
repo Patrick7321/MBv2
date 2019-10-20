@@ -5,7 +5,7 @@ from scipy.spatial import distance as dist
 
 class ColorLabeler:
 	def __init__(self):
-		self.colorsToIgnore = ['darkgray', 'darkblue', 'black']
+		self.colorsToIgnore = ['darkgray', 'darkblue', 'black', 'white']
 
 		colors = OrderedDict({
 			"red": (255, 0, 0),

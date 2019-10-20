@@ -6,4 +6,4 @@ test/resources/sample*/*Copy*
 uploads/
 .vscode
 venv/
-*.pyc
+mbv2/
