@@ -25,6 +25,7 @@ SOFTWARE.
 #Authors: Noah Zeilmann, Josiah Carpenter
 
 import cv2
+import numpy as np
 import os
 from matplotlib import pyplot as plt
 import time
@@ -41,44 +42,28 @@ from . import file_util
         Description: a class to deal with stitching images together and handling overlap of the images.
 """
 class Stitching: 
-	def __init__(self):
+	def __init__(self, sourceDirectory, resultsDirectory):
 		self.images = []
-		self.sourceDirectory = ""
-		self.resultsDirectory =""
+		self.sourceDirectory = self.setDirectory(sourceDirectory)
+		self.resultsDirectory = resultsDirectory
 		self.results = []
-		
-
-	"""
-		Description: a function for creating a stitched image from ordered images.
-		@return A stitched image.
-	"""
-	def stitchOrderedImages(self):
-		# Create stitcher and stitch images
-		stitcher = cv2.createStitcher(True)
-		status, image = stitcher.stitch(self.images)
-
-		if status == cv2.STITCHER_OK:
-			# Get results directory 
-			imagePath = os.path.join(resultsDir, "stiched_image.jpg")
-
-			# Check if results directory exist, if not create it
-			if not os.path.exists(resultsDir):
-				os.makedirs(resultsDir)
-
-			# Save image in results directory
-			cv2.imwrite(imagePath, image)
-
-			return image
-		else:
-			print('Error during stiching')
-			return False
 
 	# method takes an array of cv2 images and stitches the ones that match, ignoring those that do not.
-	# returns a status and a stitched image
-	def stitchImagesStitcher(self, images):
-		stitcher = cv2.createStitcherScans(try_use_gpu=False)
-		(status, stitched) = stitcher.stitch(images)
-		return status, stitched
+	# returns a status and a status string
+	def stitchImages_Default(self):
+
+		stitcher = cv2.createStitcher(try_use_gpu=False)
+		print(len(self.images))
+		(status, stitched) = stitcher.stitch(self.images)
+
+		if status != 0: 
+			print(status)
+			blank_image = np.zeros((50, 50, 3), np.uint8)
+			file_util.writeImage(self.resultsDirectory + 'result_default.jpg', blank_image)
+			return (status, 'An error occured while stitching.')
+
+		file_util.writeImage(self.resultsDirectory + 'result_default.jpg', stitched)
+		return (status, 'Success.')
 
 	"""
 		Description: a function for creating a stitched image from unordered images.
@@ -224,30 +209,16 @@ class Stitching:
 		return completed_images
 
 	"""
-		Description: a function setting the directory for looking for images, this will only be used by a 
-			commandline interface
+		Description: a function setting the directory where images are contained for this object.
+				uses the file_utils file to read file recursively with imutils
 		@param path - The directory in unix format
 	"""
 	def setDirectory(self, path):
 		# Get directory of test images
 		self.sourceDirectory = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", path))
 
+		# and pass that directory into the file_util to recursively read all images from that dir
 		self.images = file_util.readImagesFromDirectory(self.sourceDirectory)
-
-		# Read images and append to image array
-		# current_images = {}
-		# for file in os.listdir(self.sourceDirectory):			
-		# 	if(file.find('jpg') != -1 or file.find('JPG') != -1):
-		# 		path = os.path.join(self.sourceDirectory, file)
-		# 		img = Image.open(path)
-		# 		exif = { ExifTags.TAGS[k]: v for k, v in img._getexif().items() if k in ExifTags.TAGS }
-		# 		current_images[path] = exif['DateTimeOriginal']
-		# sorted_by_value = sorted(current_images.items(), key=lambda kv: kv[1])
-		# for key in sorted_by_value:
-		# 	self.images.append(cv2.imread(key[0], cv2.IMREAD_COLOR))
-			
-
-		
 
 	def setResultsDirectory(self,path):
 		self.resultsDirectory = path

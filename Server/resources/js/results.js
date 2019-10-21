@@ -38,7 +38,6 @@ $(window).ready(function(){
 		a.href = '/getResultReport/' + resDir 
 		a.href = a.href + '?colorOutputType=' + colorOutputType;
 		a.href = a.href + '&resDir=' + resDir;
-		a.href = a.href + '&key=' + mapLocation;
 		
 		document.body.appendChild(a)
 		a.click()

@@ -59,9 +59,8 @@ class Counting:
         self.grayScaleMap = cv2.imread(imagePath,0) # create grayscale cv2 img
         self.colorMap = cv2.imread(imagePath) # create color cv2 img
         self.colorBeads = []
-        self.waterBeads = []
         self.crushedBeads = []
-
+        self.waterBeads = []
     """
         Description: a function that takes a map of images and counts the beads.
         @Param houghConfig - a HoughConfig object that contains the values for the HoughCircles() function
@@ -99,8 +98,10 @@ class Counting:
             if(color[1] == 'bead'): # if the bead is a water bead, leave it out.
                 self.colorBeads.append(color)
                 result.append(color)
-            else:
-                self.waterBeads.append(color)
+            
+        #Get the water bubble array that contains the xy coordinates and the size.
+        if detectionParams.wantsWaterBubbles: 
+            self.GetWaterBubbles()
 
         if detectionParams.wantsCrushedBeads: # if the user wants to detect crushed beads.
             self.getCrushedBeads(cimg, circles)
@@ -112,25 +113,56 @@ class Counting:
         return result
 
     """
-        Description: a function that takes a cicle's RGB values and returns if it is water or not
-        @param RGB - tuple containing the average red, green, and blue values of a circle
-        @return a boolean that will be True if the circle is water
+        Description: a function that takes an image and finds the water bubbles in it
+        @return an array with x,y coordinates for the center of each water bubble and the size of the water bubble
     """
-    def isWater(self, RGB):
-        red = RGB[0]
-        green = RGB[1]
-        blue = RGB[2]
-        isWater = False
+    def GetWaterBubbles(self):
+        # Read image
+        im = self.colorMap
+        #Create a white border around the image to detect partial water bubbles
+        bordered = cv2.copyMakeBorder(im, 5, 5, 5, 5, cv2.BORDER_CONSTANT, 255)
+        #Create a version of the image that makes values greater than a certain RGB value black, and those below white, then inverst it for blob detection
+        lower = np.array([0, 0, 0])
+        upper = np.array([120, 120, 120])
+        colormask = cv2.inRange(bordered, lower, upper)
+        (T, thresh) = cv2.threshold(colormask, 1, 255, cv2.THRESH_BINARY)
 
+        # Setup SimpleBlobDetector parameters
+        params = cv2.SimpleBlobDetector_Params()
+        # Change thresholds
+        params.minThreshold = 10
+        params.maxThreshold = 200
+        # Filter by Area.
+        params.filterByArea = True
+        params.minArea = 16
+        params.maxArea = 10000
+        # Filter by Circularity
+        params.filterByCircularity = False
+        params.minCircularity = .0
+        # Filter by Convexity
+        params.filterByConvexity = True
+        params.minConvexity = 0.90
+        # Filter by Inertia
+        params.filterByInertia = True
+        params.minInertiaRatio = 0.0
 
-        maxRGBValue = 230
-        minRGBValue = 3
+        # Create a detector with the parameters
+        detector = cv2.SimpleBlobDetector_create(params)
+        # Detect blobs.
+        keypoints = detector.detect(thresh)
 
-        if red >= maxRGBValue and green >= maxRGBValue and blue >= maxRGBValue:
-            isWater = True
-        if red <= minRGBValue and green <= minRGBValue and blue <= minRGBValue:
-            isWater = True
-        return isWater
+        # Remove keypoint if on a colored bead, and adds the size of the bubble to the array.
+        NewKP = []
+        for keypoint in keypoints:
+            y = int(keypoint.pt[0])
+            x = int(keypoint.pt[1])
+            radius = np.sqrt(keypoint.size / 3.1415)
+            if radius < 1:
+                radius = 1
+            BGRValue = im[x, y]
+            if BGRValue[2] >= 50 and BGRValue[1] >= 50 and BGRValue[0] >= 50:
+                self.waterBeads.append([[0, 0, 0], 'waterBead', [y, x, radius]])
+        
 
     def getCrushedBeads(self, image, circles):
         temp_img = self.grayScaleMap.copy()
@@ -165,6 +197,26 @@ class Counting:
                     cX = 0
                     cY = 0
                 cv2.circle(image, (cX, cY), 2, (0, 255, 0), 3)
+
+    #Description: a function that takes a cicle's RGB values and returns if it is water or not
+    #@param RGB - tuple containing the average red, green, and blue values of a circle
+    #@return a boolean that will be True if the circle is water           
+    def isWater(self, RGB):
+        red = RGB[0]
+        green = RGB[1]
+        blue = RGB[2]
+        isWater = False
+
+
+        maxRGBValue = 230
+        minRGBValue = 3
+
+        if red >= maxRGBValue and green >= maxRGBValue and blue >= maxRGBValue:
+            isWater = True
+        if red <= minRGBValue and green <= minRGBValue and blue <= minRGBValue:
+            isWater = True
+        return isWater
+
 
     """
         Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]

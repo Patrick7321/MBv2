@@ -39,6 +39,7 @@ $(document).ready(function() {
         videoHolder = $('#video-holder'),
         alertContainer = $('#alert-container'),
         crushedBeadCheckbox = $('#crushed-bead-checkbox')
+        waterBubbleCheckbox = $('#water-bubble-checkbox')
         overlay = $('#overlay'),
         timeoutMgr = {
             imgFormatTimeout: null,
@@ -70,6 +71,10 @@ $(document).ready(function() {
 
     crushedBeadCheckbox.click(() => {
         crushedBeadCheckbox.toggle(this.checked);
+    })
+
+    waterBubbleCheckbox.click(() => {
+        waterBubbleCheckbox.toggle(this.checked);
     })
 
 
@@ -188,8 +193,9 @@ $(document).ready(function() {
         
         let data = new FormData(imageForm[0]);
         let crushedBeadDetection = crushedBeadCheckbox[0].checked;
+        let waterBubbleDetection = waterBubbleCheckbox[0].checked;
         let selectedColorAlgorithm = colorAlgorithm.value;
-        let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}&colorAlgorithm=${selectedColorAlgorithm}`;
+        let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}&colorAlgorithm=${selectedColorAlgorithm}&wantsBubbles=${waterBubbleDetection}`;
 
         console.log("URL: " + url);
         overlay.removeClass('d-none');
@@ -203,12 +209,12 @@ $(document).ready(function() {
             contentType: false,
             processData: false
         })
-        .done(function(e) {
-            if (e.status === 0) {
-                window.location.href = 'getStitchedImage' + e.location;
+        .done(function(response) {
+            if (response.status === 0) {
+                window.location.href = 'getStitchedImage' + response.location;
             }
             else {
-                postFail();
+                postFail(response);
             }
         })
         .fail(postFail)
@@ -249,14 +255,14 @@ $(document).ready(function() {
         slideHolder.append(placeholder);
     }
 
-    function postFail(e) {
+    function postFail(response) {
         overlay.addClass('d-none');
         createAlert('post-alert', 'An error occured while uploading your files, please try again later.', 'postTimeout');
     }
 
     function noImagesSelected(e) {
         overlay.addCass('d-none');
-        createAlert('no-images-selected', 'Please select images for upload', 'postTimeout');
+        createAlert('no-images-selected', response.msg, 'postTimeout');
     }
 
 });
