@@ -33,6 +33,7 @@ import math
 import itertools
 import csv
 import sys
+import datetime
 from enum import Enum
 from os import listdir, path
 from . import util
@@ -386,6 +387,19 @@ class Counting:
         endIndex = newPath.rfind("/")
         newPath = newPath[:endIndex]
         newPath = newPath.replace("maps", "results")
-        newPath = newPath + "/beads.csv"
+        currentTime = datetime.datetime.now()
+        currentTimeString = currentTime.strftime("%Y-%m-%dT%H-%M-%S")
+        
+        if colorFormat == "rgb":
+                    newPath = newPath + '/rgb_' + currentTimeString + '.csv'
+        elif colorFormat == "hsv":
+                    newPath = newPath + '/hsv_' + currentTimeString + '.csv'
+        elif colorFormat == "cmyk":
+                    newPath = newPath + '/cmyk_' + currentTimeString + '.csv'
+        elif colorFormat == "grayscale":
+                    newPath = newPath + '/grayscale_' + currentTimeString + '.csv'
 
-        util.makeBeadsCSV(newPath, colorFormat, self.colorBeads)
+        print(newPath, file=sys.stderr)
+
+        util.makeBeadsCSV(newPath, colorFormat, self.colorBeads, self.crushedBeads, self.waterBeads)
+        return currentTimeString
