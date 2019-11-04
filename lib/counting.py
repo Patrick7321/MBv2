@@ -75,33 +75,41 @@ class Counting:
         img = self.grayScaleMap
         cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
         blur = cv2.GaussianBlur(img,(7,7),0)
-        circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,dp=houghConfig["dp"],minDist=houghConfig["minDist"],
-                            param1=houghConfig["param1"],param2=houghConfig["param2"],minRadius=houghConfig["minRadius"],maxRadius=houghConfig["maxRadius"])
+        circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,
+                                    dp=houghConfig["dp"],
+                                    minDist=houghConfig["minDist"],
+                                    param1=houghConfig["param1"],
+                                    param2=houghConfig["param2"],
+                                    minRadius=detectionParams.beadLowerBound,
+                                    maxRadius=detectionParams.beadUpperBound)
+        print(detectionParams.beadLowerBound, file=sys.stderr)
+        print(detectionParams.beadUpperBound, file=sys.stderr)
 
-        circles = np.uint16(np.around(circles))
-        for i in circles[0,:]:
-            # i[0] is x coordinate, i[1] is y coordinate, i[2] is radius
-            # draw the outer circle
-            cv2.circle(cimg,(i[0],i[1]),i[2],(0,255,0),2)
-            # draw the center of the circle
-            cv2.circle(cimg,(i[0],i[1]),2,(0,0,255),3)
-
-
-            if detectionParams.detectionAlgorithm == "avg":
-                color = self.getAverageColor(i)
-            elif detectionParams.detectionAlgorithm == "mid":
-                color = self.getMiddleColor(i)
-            elif detectionParams.detectionAlgorithm == "corner":
-                color = self.getFourQuadrantColor(i)
-            elif detectionParams.detectionAlgorithm == "rad":
-                color = self.getRadiusAverageColor(i)
+        if circles is not None:
+            circles = np.uint16(np.around(circles))
+            for i in circles[0,:]:
+                # i[0] is x coordinate, i[1] is y coordinate, i[2] is radius
+                # draw the outer circle
+                cv2.circle(cimg,(i[0],i[1]),i[2],(0,255,0),2)
+                # draw the center of the circle
+                cv2.circle(cimg,(i[0],i[1]),2,(0,0,255),3)
 
 
-            if(color[1] == 'bead'): # if the bead is a water bead, leave it out.
-                self.colorBeads.append(color)
-                result.append(color)
-            else:
-                self.waterBeads.append(color)
+                if detectionParams.detectionAlgorithm == "avg":
+                    color = self.getAverageColor(i)
+                elif detectionParams.detectionAlgorithm == "mid":
+                    color = self.getMiddleColor(i)
+                elif detectionParams.detectionAlgorithm == "corner":
+                    color = self.getFourQuadrantColor(i)
+                elif detectionParams.detectionAlgorithm == "rad":
+                    color = self.getRadiusAverageColor(i)
+
+
+                if(color[1] == 'bead'): # if the bead is a water bead, leave it out.
+                    self.colorBeads.append(color)
+                    result.append(color)
+                else:
+                    self.waterBeads.append(color)
 
         if detectionParams.wantsCrushedBeads: # if the user wants to detect crushed beads.
             self.getCrushedBeads(cimg)
@@ -200,9 +208,9 @@ class Counting:
     @param drawing - an optional parameter in case the image the results need to be drawn on
                      is different than the image the range detection was performed on.
     """
-    def removeImgAspect(self, img, minBound, maxBound, drawing=[]):
+    def removeImgAspect(self, img, minBound, maxBound, drawing=None):
         # if no drawing image is given then it becomes the original img
-        if len(drawing) == 0:
+        if type(drawing) == None:
             drawing = img
 
         aspect = cv2.inRange(img, minBound, maxBound)

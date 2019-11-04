@@ -30,16 +30,14 @@ $(document).ready(function() {
     let singleSubmit = $('#single-submit'),
         multipleSubmit = $('#multiple-submit'),
         imageForm = $('#image-form'),
-        videoForm = $('#video-form'),
         cancelImages = $('#cancel-images'),
-        cancelVideo = $('#cancel-video'),
         imageUpload = $('#image-upload'),
-        videoUpload = $('#video-upload'),
-        videoSource = $('#video-src'),
         slideHolder = $('#slide-holder'),
-        videoHolder = $('#video-holder'),
         alertContainer = $('#alert-container'),
         crushedBeadCheckbox = $('#crushed-bead-checkbox'),
+        minBeadCircle = $('#min-bead-circle'),
+        maxBeadCircle = $('#max-bead-circle'),
+        imageContainer = $('#slide-carousel'),
         overlay = $('#overlay'),
         timeoutMgr = {
             imgFormatTimeout: null,
@@ -47,31 +45,60 @@ $(document).ready(function() {
             postTimeout: null,
         }
         prevSrc = null;
-    let minBeadValue = document.getElementById('min-bead-value');
-    let minSizeSlider = document.getElementById('min-size-slider');
 
-    let maxBeadValue = document.getElementById('max-bead-value');
-    let maxSizeSlider = document.getElementById('max-size-slider');
+        let minBeadValue = document.getElementById('min-bead-value');
+        let minSizeSlider = document.getElementById('min-size-slider');
 
-    minBeadValue.innerText = minSizeSlider.value;
-    maxBeadValue.innerText = maxSizeSlider.value;
+        let maxBeadValue = document.getElementById('max-bead-value');
+        let maxSizeSlider = document.getElementById('max-size-slider');
 
-    let colorAlgorithm = document.getElementById('color-algorithm-selection');
+        minBeadValue.innerText = minSizeSlider.value;
+        maxBeadValue.innerText = maxSizeSlider.value;
 
-    let magSelect = document.getElementById('mag-select');
+        let colorAlgorithm = document.getElementById('color-algorithm-selection');
+
+        let magSelect = document.getElementById('mag-select');
+
+        minBeadCircle.draggable();
+        maxBeadCircle.draggable();
+
+    // Old slider values to use if the user tries to have max < min slider
+    // or min > max slider.
+    let minSizeSliderValue = minSizeSlider.value;
+    let maxSizeSliderValue = maxSizeSlider.value;
 
     minSizeSlider.oninput = function() {
-        minBeadValue.innerHTML = this.value;
-    }
+        if (Number(this.value) < Number(maxSizeSliderValue)) {
+            let circleRadius = calculateCircleRadius(this.value);
+            minBeadValue.innerHTML = this.value;
+            minBeadCircle.height(circleRadius).width(circleRadius);
+            minSizeSliderValue = this.value;
+        } else {
+            this.value = minSizeSliderValue;
+        }
+    };
 
     maxSizeSlider.oninput = function() {
-        maxBeadValue.innerHTML = this.value;
-    }
+        if (Number(this.value) > Number(minSizeSliderValue)) {
+            let circleRadius = calculateCircleRadius(this.value);
+            maxBeadValue.innerHTML = this.value;
+            maxBeadCircle.height(circleRadius).width(circleRadius);
+            maxSizeSliderValue = this.value;
+        } else {
+            this.value = maxSizeSliderValue;
+        }
+    };
 
     crushedBeadCheckbox.click(() => {
         crushedBeadCheckbox.toggle(this.checked);
-    })
+    });
 
+    function calculateCircleRadius(value) {
+        let width = 480 / imageContainer[0].clientWidth;
+        let height = 640 / imageContainer[0].clientHeight;
+
+        return value * width;
+    }
 
     imageUpload.change(function(e) {
         let invalidFiles;
@@ -156,12 +183,14 @@ $(document).ready(function() {
             noImagesSelected();
             return;
         }
-        
+
         let data = new FormData(imageForm[0]);
         let crushedBeadDetection = crushedBeadCheckbox[0].checked;
         let selectedColorAlgorithm = colorAlgorithm.value;
         let magnificationLevel = magSelect.value;
-        let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}&colorAlgorithm=${selectedColorAlgorithm}&maglevel=${magnificationLevel}`;
+        let minBead = minBeadValue.innerText;
+        let maxBead = maxBeadValue.innerText;
+        let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}&colorAlgorithm=${selectedColorAlgorithm}&maglevel=${magnificationLevel}&minBead=${minBead}&maxBead=${maxBead}`;
 
         console.log("URL: " + url);
         overlay.removeClass('d-none');
@@ -193,11 +222,13 @@ $(document).ready(function() {
             noImagesSelected();
             return;
         }
-        
+
         let data = new FormData(imageForm[0]);
         let crushedBeadDetection = crushedBeadCheckbox[0].checked;
         let selectedColorAlgorithm = colorAlgorithm.value;
-        let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}&colorAlgorithm=${selectedColorAlgorithm}`;
+        let minBead = minBeadValue.innerText;
+        let maxBead = maxBeadValue.innerText;
+        let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}&colorAlgorithm=${selectedColorAlgorithm}&minBead=${minBead}&maxBead=${maxBead}`;
 
         console.log("URL: " + url);
         overlay.removeClass('d-none');
@@ -265,5 +296,4 @@ $(document).ready(function() {
         overlay.addCass('d-none');
         createAlert('no-images-selected', response.msg, 'postTimeout');
     }
-
 });

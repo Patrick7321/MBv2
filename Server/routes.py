@@ -69,10 +69,12 @@ def uploadImagesAndConfigure():
 
     detectionParams.wantsCrushedBeads = True if request.args['wantsCrushed'] == 'true' else False # convert js 'bool' to python Bool
     detectionParams.detectionAlgorithm = request.args['colorAlgorithm']
+    detectionParams.beadLowerBound = int(request.args['minBead'])
+    detectionParams.beadUpperBound = int(request.args['maxBead'])
 
     if 'maglevel' in request.args:
         detectionParams.magnificationLevel = request.args['maglevel']
-    
+
     images = request.files.getlist("images")
 
     newDir = file_util.createUploadDir()
@@ -101,7 +103,7 @@ def getStitchedImage(stitchDirectory):
 
 # accepts a path to the stitched image directory
 @app.route('/getResults/<path:directory>')
-def getResults(directory): 
+def getResults(directory):
 
     magLevel = ''
     if request.args.get('maglevel') == '4x' or detectionParams.magnificationLevel == '4x':
