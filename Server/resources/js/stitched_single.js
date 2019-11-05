@@ -29,7 +29,8 @@ $(document).ready(function() {
 	let acceptBtn = $('#accept'),
 		rejectBtn = $('#reject'),
 		overlay = $('#overlay'),
-		magSelect = $("#mag-select");
+		magSelect = $("#mag-select"),
+		homeBtn = $('#home');
 
 
 	$('.pannable-image').ImageViewer();
@@ -42,4 +43,8 @@ $(document).ready(function() {
 	rejectBtn.click(function(e) {
 		window.location.pathname = '/';
 	});
+
+	homeBtn.click(function(e) {
+		window.location.href = '/';
+	})
 });

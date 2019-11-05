@@ -126,9 +126,10 @@ def getResults(directory):
 def getResultReport(directory):
     colorOutputType = request.args.get('colorOutputType') # this is the type of output we want
     resDir = request.args.get('resDir') # this is the directory we are accessing
-
-    countingDict[directory].makeBeadsCSV(colorOutputType) # access the stored counting variable and regen csv data
-
     uploadDir = 'resources/uploads/' + resDir
 
-    return send_file(uploadDir + '/results/beads.csv', as_attachment=True)
+    csvTimestamp = countingDict[directory].makeBeadsCSV(colorOutputType) # access the stored counting variable and regen csv data
+
+
+
+    return send_file(uploadDir + '/results/' + colorOutputType + '_' + csvTimestamp + '.csv', as_attachment=True)

@@ -31,6 +31,12 @@ $(window).ready(function(){
 	let csvFormatSelect = document.getElementById("csvFormat");
 	let csvDownloadButton = document.getElementById("csvDownload");
 
+	let home = $('#home');
+
+	home.click(function(e) {
+		window.location.href = '/';
+	})
+
 	csvDownloadButton.addEventListener('click', (e) => {
 		let a = document.createElement('a')
 		const colorOutputType = csvFormatSelect.value;

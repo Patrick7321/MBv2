@@ -1,17 +1,17 @@
 import csv
 import colorsys
 
-CSV_RGB_COLNAMES =  ['Bead Number', 'Red Val', 'Green Val', 'Blue Val', 'X-Coord', 'Y-Coord', 'Radius']
-CSV_HSV_COLNAMES = ['Bead Number', 'Hue Val', 'Saturation Val', 'Value Val', 'X-Coord', 'Y-Coord', 'Radius']
-CSV_CMYK_COLNAMES = ['Bead Number', 'Cyan Val', 'Magenta Val', 'Yellow Val', 'Black Val', 'X-Coord', 'Y-Coord', 'Radius']
-CSV_GRAYSCALE_COLNAMES = ['Bead Number', 'Grayscale Red Val', 'Grayscale Green Val', 'Grayscale Blue Val', 'X-Coord', 'Y-Coord', 'Radius']
+CSV_RGB_COLNAMES =  ['Bead Number', 'Type', 'Red Val', 'Green Val', 'Blue Val', 'X-Coord', 'Y-Coord', 'Radius']
+CSV_HSV_COLNAMES = ['Bead Number', 'Type', 'Hue Val', 'Saturation Val', 'Value Val', 'X-Coord', 'Y-Coord', 'Radius']
+CSV_CMYK_COLNAMES = ['Bead Number', 'Type', 'Cyan Val', 'Magenta Val', 'Yellow Val', 'Black Val', 'X-Coord', 'Y-Coord', 'Radius']
+CSV_GRAYSCALE_COLNAMES = ['Bead Number', 'Type', 'Grayscale Val', 'X-Coord', 'Y-Coord', 'Radius']
 
 """
     Description: function that takes beadinfo and creates a csv with varying types of color output data
     @param colorFormat: a string that is either 'rgb', 'hsv', 'cmyk', or 'grayscale'
     @return void, writes file directly from class attributes
 """ 
-def makeBeadsCSV(filepath, colorFormat, colorBeads): 
+def makeBeadsCSV(filepath, colorFormat, colorBeads, crushedBeads, waterBeads): 
 
     colNames = CSV_RGB_COLNAMES # RGB will be selected by default. these values will change if the colorFormat value matches below
     writeFunc = writeOutputRgb
@@ -29,7 +29,9 @@ def makeBeadsCSV(filepath, colorFormat, colorBeads):
     with open(filepath, mode='w', newline='') as beadFile:
         writer = csv.writer(beadFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(colNames)
-        writeFunc(writer, colorBeads)
+        writeFunc(writer, colorBeads) 
+        addCrushedBeads(writer, colorFormat, crushedBeads)
+        addWaterBeads(writer, colorFormat, waterBeads)
 
 def writeOutputRgb(writer, colorBeads): 
     i = 1
@@ -39,7 +41,7 @@ def writeOutputRgb(writer, colorBeads):
         x = bead[2][0]; y = bead[2][1]
         radius = bead[2][2]
         
-        writer.writerow([i, r, g, b, x, y, radius]) # row is written with beadNum, r, g, b, x, y, radius
+        writer.writerow([i, "Bead", r, g, b, x, y, radius]) # row is written with beadNum, r, g, b, x, y, radius
         i += 1
 
 def writeOutputHsv(writer, colorBeads): 
@@ -51,7 +53,7 @@ def writeOutputHsv(writer, colorBeads):
         x = bead[2][0]; y = bead[2][1]
         radius = bead[2][2]
 
-        writer.writerow([i, h, s, v, x, y, radius]) # row is written with beadNum, h, s, v, x, y, radius
+        writer.writerow([i, "Bead", h, s, v, x, y, radius]) # row is written with beadNum, h, s, v, x, y, radius
         i += 1
 
 def writeOutputCmyk(writer, colorBeads): 
@@ -63,7 +65,7 @@ def writeOutputCmyk(writer, colorBeads):
         x = bead[2][0]; y = bead[2][1]
         radius = bead[2][2]
 
-        writer.writerow([i, C, M, Y, K, x, y, radius]) # row is written with beadNum, c, m, y, k, x, y, radius
+        writer.writerow([i, "Bead", C, M, Y, K, x, y, radius]) # row is written with beadNum, c, m, y, k, x, y, radius
         i += 1
 
 def writeOutputGrayscale(writer, colorBeads):
@@ -74,7 +76,7 @@ def writeOutputGrayscale(writer, colorBeads):
         x = bead[2][0]; y = bead[2][1]
         radius = bead[2][2]
         
-        writer.writerow([i, grayscaleValue, x, y, radius]) # row is written with beadNum, grayscaleValue, x, y, radius
+        writer.writerow([i, "Bead",  grayscaleValue, x, y, radius]) # row is written with beadNum, grayscaleValue, x, y, radius
         i += 1
 
 def listAverage(lst): 
@@ -104,3 +106,37 @@ def rgbToCmyk(r,g,b):
 
     # rescale to the range [0,cmyk_scale]
     return c*cmyk_scale, m*cmyk_scale, y*cmyk_scale, k*cmyk_scale
+
+def addCrushedBeads(writer, colorFormat, crushedBeads):
+
+    for bead in crushedBeads:
+        x = bead[2][0]; y = bead[2][1];
+        r = bead[2][2];
+
+        if colorFormat == 'hsv':
+            writer.writerow(["N/A", "Crushed Bead", "N/A", "N/A", "N/A", x, y, r])
+        elif colorFormat == 'cmyk':
+            writer.writerow(["N/A", "Crushed Bead", "N/A", "N/A", "N/A", "N/A", x, y, r]) 
+        elif colorFormat == 'grayscale':
+            writer.writerow(["N/A", "Crushed Bead", "N/A", x, y, r])
+        elif colorFormat == 'rgb':
+            writer.writerow(["N/A", "Crushed Bead", "N/A", "N/A", "N/A", x, y, r])
+
+def addWaterBeads(writer, colorFormat, waterBeads):
+    
+    for bead in waterBeads:
+        x = bead[2][0]; y = bead[2][1];
+        r = bead[2][2];
+
+        if colorFormat == 'hsv':
+            writer.writerow(["N/A", "Water Bubble", "N/A", "N/A", "N/A", x, y, r])
+        elif colorFormat == 'cmyk':
+            writer.writerow(["N/A", "Water Bubble", "N/A", "N/A", "N/A", "N/A", x, y, r]) 
+        elif colorFormat == 'grayscale':
+            writer.writerow(["N/A", "Water Bubble", "N/A", x, y, r])
+        elif colorFormat == 'rgb':
+            writer.writerow(["N/A", "Water Bubble", "N/A", "N/A", "N/A", x, y, r])
+
+
+        
+
