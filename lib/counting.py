@@ -83,8 +83,6 @@ class Counting:
                                     param2=houghConfig["param2"],
                                     minRadius=detectionParams.beadLowerBound,
                                     maxRadius=detectionParams.beadUpperBound)
-        print(detectionParams.beadLowerBound, file=sys.stderr)
-        print(detectionParams.beadUpperBound, file=sys.stderr)
 
         if circles is not None:
             circles = np.uint16(np.around(circles))
@@ -399,7 +397,7 @@ class Counting:
         newPath = newPath.replace("maps", "results")
         currentTime = datetime.datetime.now()
         currentTimeString = currentTime.strftime("%Y-%m-%dT%H-%M-%S")
-        
+
         if colorFormat == "rgb":
                     newPath = newPath + '/rgb_' + currentTimeString + '.csv'
         elif colorFormat == "hsv":
