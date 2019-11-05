@@ -77,7 +77,6 @@ class Counting:
         img = self.grayScaleMap
         cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
         blur = cv2.GaussianBlur(img,(7,7),0)
-<<<<<<< HEAD
         circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,
                                     dp=houghConfig["dp"],
                                     minDist=houghConfig["minDist"],

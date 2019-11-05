@@ -67,6 +67,9 @@ $(document).ready(function() {
     let minSizeSliderValue = minSizeSlider.value;
     let maxSizeSliderValue = maxSizeSlider.value;
 
+    minBeadCircle.height(30).width(30);
+    maxBeadCircle.height(90).width(90);
+
     minSizeSlider.oninput = function() {
         if (Number(this.value) < Number(maxSizeSliderValue)) {
             let circleRadius = calculateCircleRadius(this.value);
