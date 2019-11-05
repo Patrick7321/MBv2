@@ -6,3 +6,8 @@
     margin-top: 1em;
     float: right;
 }
+
+#mapCanvas {
+    display: block;
+    margin: auto;
+}

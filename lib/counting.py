@@ -62,6 +62,7 @@ class Counting:
         self.labMap = cv2.cvtColor(self.colorMap, cv2.COLOR_BGR2Lab)
         self.colorBeads = []
         self.waterBeads = []
+        self.partialBeads = []
         self.crushedBeads = []
 
     """
@@ -76,6 +77,7 @@ class Counting:
         img = self.grayScaleMap
         cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
         blur = cv2.GaussianBlur(img,(7,7),0)
+<<<<<<< HEAD
         circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,
                                     dp=houghConfig["dp"],
                                     minDist=houghConfig["minDist"],
@@ -93,6 +95,7 @@ class Counting:
                 # draw the center of the circle
                 cv2.circle(cimg,(i[0],i[1]),2,(0,0,255),3)
 
+                partial = self.checkPartial(i)
 
                 if detectionParams.detectionAlgorithm == "avg":
                     color = self.getAverageColor(i)
@@ -104,7 +107,9 @@ class Counting:
                     color = self.getRadiusAverageColor(i)
 
 
-                if(color[1] == 'bead'): # if the bead is a water bead, leave it out.
+                if partial:
+                    self.partialBeads.append(color)
+                elif(color[1] == 'bead'): # if the bead is a water bead, leave it out.
                     self.colorBeads.append(color)
                     result.append(color)
                 else:
@@ -140,13 +145,17 @@ class Counting:
             isWater = True
         return isWater
 
+
+
     """
     Description: does preprocessing on the image map to find the crushed beads.
     @param image - image that will have the final results of the counting
     """
     def getCrushedBeads(self, image):
+        imageY = image.shape[0]
+        imageX = image.shape[1]
         mask = np.ones(image.shape[:2], dtype="uint8")
-        knownObjects = self.colorBeads + self.waterBeads
+        knownObjects = self.colorBeads + self.waterBeads + self.partialBeads
 
         # takes the known objects (beads and water beads) and colors them black
         # so they can be ignored when detecting the crushed beads
@@ -195,7 +204,13 @@ class Counting:
                 if M['m00'] > 0:
                     cX = int((M["m10"] / M["m00"]))
                     cY = int((M["m01"] / M["m00"]))
-                    self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
+                    print("ImageX:", imageX, "ImageY:", imageY, file=sys.stderr)
+                    print("cX", cX, file=sys.stderr)
+                    print("cY", cY, file=sys.stderr)
+                    if cX >= imageX - 100 or cY >= imageY - 100:
+                        pass
+                    else:
+                        self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
                 else:
                     cX = cY = 0
                 cv2.circle(image, (cX, cY), 2, (255, 0, 0), 3)
@@ -227,6 +242,22 @@ class Counting:
         @param imageMap - a map (image) of the microscope images in color.
         @return a list containing tuple with average RGB values of top 10% from bead, boolean isWater, and x,y,radius value of the bead.
     """
+
+    def checkPartial(self, circle):
+        print('checking partial', file = sys.stderr)
+        img = self.colorMap
+        imgY = img.shape[0]
+        imgX = img.shape[1]
+        x = circle[0]
+        y = circle[1]
+        radius = circle[2]
+
+        if x + radius >= imgX or y + radius >= imgY:
+            print('found partial', file = sys.stderr)
+            return True
+        else:
+            return False
+
     def getBrightestColor(self, circleInfo):
         img = self.colorMap
         imgY = img.shape[0]
