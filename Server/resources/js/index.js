@@ -72,10 +72,10 @@ $(document).ready(function() {
 
     minSizeSlider.oninput = function() {
         if (Number(this.value) < Number(maxSizeSliderValue)) {
-            let circleRadius = calculateCircleRadius(this.value);
+            let circleDimensions = calculateCircleRadius(this.value);
 
             minBeadValue.innerHTML = this.value;
-            minBeadCircle.height(circleRadius).width(circleRadius);
+            minBeadCircle.height(this.value).width(this.value);
             minSizeSliderValue = this.value;
         } else {
             this.value = minSizeSliderValue;
@@ -84,10 +84,10 @@ $(document).ready(function() {
 
     maxSizeSlider.oninput = function() {
         if (Number(this.value) > Number(minSizeSliderValue)) {
-            let circleRadius = calculateCircleRadius(this.value);
+            let circleDimensions = calculateCircleRadius(this.value);
 
             maxBeadValue.innerHTML = this.value;
-            maxBeadCircle.height(circleRadius).width(circleRadius);
+            maxBeadCircle.height(this.value).width(this.value);
             maxSizeSliderValue = this.value;
         } else {
             this.value = maxSizeSliderValue;
@@ -99,10 +99,10 @@ $(document).ready(function() {
     });
 
     function calculateCircleRadius(value) {
-        let width = 480 / imageContainer[0].clientWidth;
-        let height = 640 / imageContainer[0].clientHeight;
+        let width = 480 / imageContainer[0].clientWidth * value;
+        let height = 640 / imageContainer[0].clientHeight * value;
 
-        return value * width;
+        return [height, width];
     }
 
     imageUpload.change(function(e) {

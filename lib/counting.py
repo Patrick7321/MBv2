@@ -162,7 +162,7 @@ class Counting:
             # fills in the circle
             cv2.circle(mask, (bead[2][0],bead[2][1]), bead[2][2], (0,0,0), -1)
             #fills the outer edges of the circle
-            cv2.circle(mask, (bead[2][0],bead[2][1]), bead[2][2], (0,0,0), 17)
+            cv2.circle(mask, (bead[2][0],bead[2][1]), bead[2][2], (0,0,0), 16)
 
         color = cv2.bitwise_and(self.colorMap, self.colorMap, mask=mask)
 
@@ -225,7 +225,7 @@ class Counting:
     """
     def removeImgAspect(self, img, minBound, maxBound, drawing=None):
         # if no drawing image is given then it becomes the original img
-        if type(drawing) == None:
+        if drawing is None:
             drawing = img
 
         aspect = cv2.inRange(img, minBound, maxBound)
