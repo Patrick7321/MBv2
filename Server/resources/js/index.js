@@ -70,6 +70,7 @@ $(document).ready(function() {
     minSizeSlider.oninput = function() {
         if (Number(this.value) < Number(maxSizeSliderValue)) {
             let circleRadius = calculateCircleRadius(this.value);
+
             minBeadValue.innerHTML = this.value;
             minBeadCircle.height(circleRadius).width(circleRadius);
             minSizeSliderValue = this.value;
@@ -81,6 +82,7 @@ $(document).ready(function() {
     maxSizeSlider.oninput = function() {
         if (Number(this.value) > Number(minSizeSliderValue)) {
             let circleRadius = calculateCircleRadius(this.value);
+
             maxBeadValue.innerHTML = this.value;
             maxBeadCircle.height(circleRadius).width(circleRadius);
             maxSizeSliderValue = this.value;
