@@ -40,10 +40,13 @@ class Parameters():
     def __init__(self):
         self.wantsCrushedBeads = False
         self.wantsWaterBubbles = False
-        self.beadUpperBound = 0
-        self.beadLowerBound = 0
         self.detectionAlgorithm = ''
         self.magnificationLevel = ''
+        
+        self.minDist = 10
+        self.sensitivity = 50
+        self.minRadius = 50
+        self.maxRadius = 120
 
 detectionParams = Parameters()
 
@@ -69,8 +72,8 @@ def uploadImagesAndConfigure():
 
     detectionParams.wantsCrushedBeads = True if request.args['wantsCrushed'] == 'true' else False # convert js 'bool' to python Bool
     detectionParams.detectionAlgorithm = request.args['colorAlgorithm']
-    detectionParams.beadLowerBound = int(request.args['minBead'])
-    detectionParams.beadUpperBound = int(request.args['maxBead'])
+    detectionParams.minRadius = int(request.args['minBead'])
+    detectionParams.maxRadius = int(request.args['maxBead'])
 
     if 'maglevel' in request.args:
         detectionParams.magnificationLevel = request.args['maglevel']
@@ -111,8 +114,6 @@ def getResults(directory):
     else:
         magLevel = HoughConfig.OBJX10
 
-
-
     resultsDirectory = directory.split("/")[0]
     serverDirectory = 'Server/resources/uploads/' + directory
 
@@ -122,6 +123,18 @@ def getResults(directory):
     return render_template('results.html', colorBeads = colorBeads, waterBeads = countingDict[resultsDirectory].waterBeads,
         crushedBeads = countingDict[resultsDirectory].crushedBeads, mapLocation = directory, resultsDirectory = resultsDirectory)
 
+@app.route('/setParameters', methods=['POST'])
+def setParameters():
+    try:
+        jsonData = request.get_json()
+        detectionParams.minDist = int(jsonData['minDist'])
+        detectionParams.sensitivity = int(jsonData['sensitivity'])
+        detectionParams.minRadius = int(jsonData['minRadius'])
+        detectionParams.maxRadius = int(jsonData['maxRadius'])
+        return jsonify({'status': 0, 'statusString': 'Parameters successfully set'})
+    except Exception as e: 
+        return jsonify({'status': 1, 'statusString': 'An Error occurred setting parameters'})
+
 @app.route('/getResultReport/<path:directory>')
 def getResultReport(directory):
     colorOutputType = request.args.get('colorOutputType') # this is the type of output we want
@@ -129,7 +142,5 @@ def getResultReport(directory):
     uploadDir = 'resources/uploads/' + resDir
 
     csvTimestamp = countingDict[directory].makeBeadsCSV(colorOutputType) # access the stored counting variable and regen csv data
-
-
 
     return send_file(uploadDir + '/results/' + colorOutputType + '_' + csvTimestamp + '.csv', as_attachment=True)

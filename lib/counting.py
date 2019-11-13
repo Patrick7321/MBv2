@@ -81,8 +81,8 @@ class Counting:
                                     minDist=houghConfig["minDist"],
                                     param1=houghConfig["param1"],
                                     param2=houghConfig["param2"],
-                                    minRadius=detectionParams.beadLowerBound,
-                                    maxRadius=detectionParams.beadUpperBound)
+                                    minRadius=detectionParams.minRadius,
+                                    maxRadius=detectionParams.maxRadius)
 
         if circles is not None:
             circles = np.uint16(np.around(circles))
