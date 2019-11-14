@@ -50,6 +50,8 @@ class HoughConfig(Enum):
     # 10x magnification
     OBJX10 = { "dp": 1,"minDist": 60,"param1": 65,"param2": 68,"minRadius": 0,"maxRadius": 125 }
 
+    DEFAULT = { "dp": 1,"minDist": 0,"param1": 50,"param2": 30,"minRadius": 0,"maxRadius": 125 }
+
 """
     Description: a class to deal with counting microbeads in a stitched image.
 """
@@ -78,9 +80,9 @@ class Counting:
         blur = cv2.GaussianBlur(img,(7,7),0)
         circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,
                                     dp=houghConfig["dp"],
-                                    minDist=houghConfig["minDist"],
+                                    minDist=detectionParams.minDist,
                                     param1=houghConfig["param1"],
-                                    param2=houghConfig["param2"],
+                                    param2=detectionParams.sensitivity,
                                     minRadius=detectionParams.minRadius,
                                     maxRadius=detectionParams.maxRadius)
 

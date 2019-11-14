@@ -47,6 +47,22 @@ $(window).ready(function(){
 
 	let home = $('#home');
 
+	function setInitialSliderValues() {
+		minDistSlider.value = minDist;
+		minDistValue.textContent = minDist;
+
+		sensSlider.value = sensitivity;
+		sensValue.textContent = sensitivity;
+
+		minSizeSlider.value = minRadius;
+		minSizeValue.textContent = minRadius;
+
+		maxSizeSlider.value = maxRadius;
+		maxSizeValue.textContent = maxRadius;
+	}
+	
+	setInitialSliderValues();
+
 	minDistSlider.oninput = function() {
 		minDistValue.textContent = minDistSlider.value;
 	};

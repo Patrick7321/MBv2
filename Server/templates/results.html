@@ -655,6 +655,12 @@ SOFTWARE. -->
                 beads = beads.replace(/True/g,"true");*/
                 beads = JSON.parse(beads);
             var resDir = '{{resultsDirectory}}'
+
+            let minDist = Number('{{ minDist }}');
+            let sensitivity = Number('{{ sensitivity }}');
+            let minRadius = Number('{{ minRadius }}');
+            let maxRadius = Number('{{ maxRadius }}');
+
         </script>
         <script src='/resources/js/mapInspector.js'></script>
         <script src='/resources/js/results.js'></script>

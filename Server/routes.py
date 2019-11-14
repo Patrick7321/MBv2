@@ -121,7 +121,12 @@ def getResults(directory):
     colorBeads = countingDict[resultsDirectory].getColorBeads(magLevel, detectionParams)
 
     return render_template('results.html', colorBeads = colorBeads, waterBeads = countingDict[resultsDirectory].waterBeads,
-        crushedBeads = countingDict[resultsDirectory].crushedBeads, mapLocation = directory, resultsDirectory = resultsDirectory)
+        crushedBeads = countingDict[resultsDirectory].crushedBeads, mapLocation = directory, resultsDirectory = resultsDirectory, 
+                minDist = detectionParams.minDist,
+                sensitivity = detectionParams.sensitivity,
+                minRadius = detectionParams.minRadius,
+                maxRadius = detectionParams.maxRadius
+        )
 
 @app.route('/setParameters', methods=['POST'])
 def setParameters():
