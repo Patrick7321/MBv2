@@ -37,7 +37,8 @@ $(document).ready(function() {
         crushedBeadCheckbox = $('#crushed-bead-checkbox'),
         minBeadCircle = $('#min-bead-circle'),
         maxBeadCircle = $('#max-bead-circle'),
-        imageContainer = $('#slide-carousel'),
+        image = $('.active.carousel-item'),
+        imageContainer = $('#slide-holder')
         overlay = $('#overlay'),
         timeoutMgr = {
             imgFormatTimeout: null,
@@ -75,7 +76,7 @@ $(document).ready(function() {
             let circleDimensions = calculateCircleRadius(this.value);
 
             minBeadValue.innerHTML = this.value;
-            minBeadCircle.height(this.value).width(this.value);
+            minBeadCircle.height(circleDimensions).width(circleDimensions);
             minSizeSliderValue = this.value;
         } else {
             this.value = minSizeSliderValue;
@@ -87,7 +88,7 @@ $(document).ready(function() {
             let circleDimensions = calculateCircleRadius(this.value);
 
             maxBeadValue.innerHTML = this.value;
-            maxBeadCircle.height(this.value).width(this.value);
+            maxBeadCircle.height(circleDimensions).width(circleDimensions);
             maxSizeSliderValue = this.value;
         } else {
             this.value = maxSizeSliderValue;
@@ -99,10 +100,10 @@ $(document).ready(function() {
     });
 
     function calculateCircleRadius(value) {
-        let width = 480 / imageContainer[0].clientWidth * value;
-        let height = 640 / imageContainer[0].clientHeight * value;
+        let actualArea = image.find('img')[0].naturalHeight * image.find('img')[0].naturalWidth;
+        let canvasArea = imageContainer[0].clientWidth * imageContainer[0].clientHeight
 
-        return [height, width];
+        return canvasArea / actualArea * value * 2
     }
 
     imageUpload.change(function(e) {

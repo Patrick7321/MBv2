@@ -199,8 +199,6 @@ input:checked + .slider:before {
 }
 
 .bead {
-    width: 62px;
-    height: 62px;
     margin: auto;
     border-radius: 7px;
     border-radius: 50%;
