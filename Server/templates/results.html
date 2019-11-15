@@ -530,6 +530,81 @@ SOFTWARE. -->
                 </div>
             </div>
             <div class="row mt-4">
+                <div class='card col-12'>
+                    <div class='card-header'><h2 class='mb-0'>Settings</h2></div>
+
+                    <div class='card-body'>
+
+                        <!-- Slider for mindist -->
+                        <div class='row setting-row'>
+                            <div class='col-3'>
+                                <span>Min Dist</span>
+                            </div>
+                            <div class='col-6'>
+                                <div class="slidecontainer">
+                                    <input type="range" min="1" max="125" value="0" class="slidebar" id="min-dist-slider">
+                                </div>
+                            </div>
+                            <div class='col-3'>
+                                <span id='min-dist-value'>10</span>
+                            </div>
+                        </div>
+
+                        <!-- Slider for sensitivity -->
+                        <div class='row setting-row'>
+                            <div class='col-3'>
+                                <span>Sensitivity</span>
+                            </div>
+                            <div class='col-6'>
+                                <div class="slidecontainer">
+                                    <input type="range" min="1" max="100" value="50" class="slidebar" id="sens-slider">
+                                </div>
+                            </div>
+                            <div class='col-3'>
+                                <span id='sens-value'>10</span>
+                            </div>
+                        </div>
+
+                        <!-- Sliders for minimum and maximum bead sizes -->
+                        <div class='row setting-row'>
+                                <div class='col-3'>
+                                    <span>Min Radius</span>
+                                </div>
+                                <div class='col-6'>
+                                    <div class="slidecontainer">
+                                        <input type="range" min="1" max="125" value="0" class="slidebar" id="min-size-slider">
+                                    </div>
+                                </div>
+                                <div class='col-3'>
+                                    <span id='min-bead-value'>0</span>
+                                </div>
+                        </div>
+
+                        <div class='row'>
+                            <div class='col-3'>
+                                <span>Max Radius</span>
+                            </div>
+                            <div class='col-6'>
+                                <div class="slidecontainer">
+                                    <input type="range" min="1" max="125" value="75" class="slidebar" id="max-size-slider">
+                                </div>
+                            </div>
+                            <div class='col-3'>
+                                <span id='max-bead-value'>75</span>
+                            </div>
+                        </div>
+
+                        <div class='row'>
+                            <div class='col-12 text-center mt-4'>
+                                <button id='recount-button' class='btn btn-primary'>Recount</button>
+                            </div>
+                        </div>
+
+                        <hr>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
                 <div class="col-4">
                     <form class="form-inline">
                         <div class="form-group mx-sm-3 mb-2">
@@ -580,6 +655,12 @@ SOFTWARE. -->
                 beads = beads.replace(/True/g,"true");*/
                 beads = JSON.parse(beads);
             var resDir = '{{resultsDirectory}}'
+
+            let minDist = Number('{{ minDist }}');
+            let sensitivity = Number('{{ sensitivity }}');
+            let minRadius = Number('{{ minRadius }}');
+            let maxRadius = Number('{{ maxRadius }}');
+
         </script>
         <script src='/resources/js/mapInspector.js'></script>
         <script src='/resources/js/results.js'></script>
