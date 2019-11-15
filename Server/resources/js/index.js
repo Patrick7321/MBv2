@@ -194,8 +194,16 @@ $(document).ready(function() {
         let crushedBeadDetection = crushedBeadCheckbox[0].checked;
         let selectedColorAlgorithm = colorAlgorithm.value;
         let magnificationLevel = magSelect.value;
-        let minBead = minBeadValue.innerText;
-        let maxBead = maxBeadValue.innerText;
+        let minBead = Number(minBeadValue.innerText) - 10;
+        let maxBead = Number(maxBeadValue.innerText) + 10;
+
+        if (minBead < 0) {
+            minBeadCircle = 0;
+        }
+        if (maxBead > 125) {
+            maxBead = 125;
+        }
+
         let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}&colorAlgorithm=${selectedColorAlgorithm}&maglevel=${magnificationLevel}&minBead=${minBead}&maxBead=${maxBead}`;
 
         console.log("URL: " + url);
@@ -232,8 +240,16 @@ $(document).ready(function() {
         let data = new FormData(imageForm[0]);
         let crushedBeadDetection = crushedBeadCheckbox[0].checked;
         let selectedColorAlgorithm = colorAlgorithm.value;
-        let minBead = minBeadValue.innerText;
-        let maxBead = maxBeadValue.innerText;
+        let minBead = Number(minBeadValue.innerText) - 10;
+        let maxBead = Number(maxBeadValue.innerText) + 10;
+
+        if (minBead < 0) {
+            minBeadCircle = 0;
+        }
+        if (maxBead > 125) {
+            maxBead = 125;
+        }
+
         let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}&colorAlgorithm=${selectedColorAlgorithm}&minBead=${minBead}&maxBead=${maxBead}`;
 
         console.log("URL: " + url);

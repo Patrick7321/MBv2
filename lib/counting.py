@@ -146,75 +146,62 @@ class Counting:
             isWater = True
         return isWater
 
-
-
     """
     Description: does preprocessing on the image map to find the crushed beads.
     @param image - image that will have the final results of the counting
     """
     def getCrushedBeads(self, image):
+        color = self.__removeKnownObjects(image)
+
+        # makes background an even white color
+        minBg = (235, 235, 235)
+        maxBg = (255, 255, 255)
+        self.__removeImgAspect(color, minBg, maxBg)
+
+        # removes black edges caused by stitching
+        minBlack = (0, 0, 0)
+        maxBlack = (10, 10, 10)
+        self.__removeImgAspect(color, minBlack, maxBlack)
+
+        lab = cv2.cvtColor(color, cv2.COLOR_BGR2LAB)
+
+        # removes black borders
+        minBorder = (0, 0, 0)
+        maxBorder = (180, 190, 130)
+        self.__removeImgAspect(lab, minBorder, maxBorder, drawing=color)
+
+        contours = self.__findContours(color)
+        cl = colorLabeler.ColorLabeler()
+
         imageY = image.shape[0]
         imageX = image.shape[1]
+        for c in contours:
+            color_label = cl.label(self.labMap, c)
+            if color_label not in cl.colorsToIgnore:
+                M = cv2.moments(c)
+                if M['m00'] > 0:
+                    cX = int((M["m10"] / M["m00"]))
+                    cY = int((M["m01"] / M["m00"]))
+                    if cX >= imageX - 100 or cY >= imageY - 100:
+                        pass
+                    else:
+                        self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
+                        cv2.drawContours(image, [c], -1, (255, 0, 0), 4)
+                        cv2.circle(image, (cX, cY), 2, (255, 0, 0), 3)
+
+    def __removeKnownObjects(self, image):
         mask = np.ones(image.shape[:2], dtype="uint8")
         knownObjects = self.colorBeads + self.waterBeads + self.partialBeads
 
         # takes the known objects (beads and water beads) and colors them black
         # so they can be ignored when detecting the crushed beads
         for bead in knownObjects:
-            # fills in the circle
             cv2.circle(mask, (bead[2][0],bead[2][1]), bead[2][2], (0,0,0), -1)
-            #fills the outer edges of the circle
             cv2.circle(mask, (bead[2][0],bead[2][1]), bead[2][2], (0,0,0), 16)
 
         color = cv2.bitwise_and(self.colorMap, self.colorMap, mask=mask)
 
-        # gathers the locations for the white background and
-        # colors it white so it won't affect the contour detection
-        minBg = (235, 235, 235)
-        maxBg = (255, 255, 255)
-        self.removeImgAspect(color, minBg, maxBg)
-
-        # gathers the locations of the black areas from stitching and
-        # colors it white so it won't affect the contour detection
-        minBlack = (0, 0, 0)
-        maxBlack = (10, 10, 10)
-        self.removeImgAspect(color, minBlack, maxBlack)
-
-        lab = cv2.cvtColor(color, cv2.COLOR_BGR2LAB)
-
-        # gathers the locations of the black borders around the beads and
-        # colors it white so it won't affect the contour detection
-        minBorder = (0, 0, 0)
-        maxBorder = (180, 190, 130)
-        self.removeImgAspect(lab, minBorder, maxBorder, drawing=color)
-
-        gray = cv2.cvtColor(color, cv2.COLOR_BGR2GRAY)
-        blur = cv2.GaussianBlur(gray, (31, 31), 0)
-        thresh = cv2.threshold(blur, 225, 255, cv2.THRESH_BINARY_INV)[1]
-        kernel = np.ones((5,5),np.uint8)
-        erosion = cv2.erode(thresh,kernel,iterations = 1)
-        imgOutput, contours, hierarchy = cv2.findContours(erosion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cl = colorLabeler.ColorLabeler()
-
-        for c in contours:
-            color_label = cl.label(self.labMap, c)
-            if color_label not in cl.colorsToIgnore:
-                cv2.drawContours(image, [c], -1, (255, 0, 0), 4)
-
-                M = cv2.moments(c)
-                if M['m00'] > 0:
-                    cX = int((M["m10"] / M["m00"]))
-                    cY = int((M["m01"] / M["m00"]))
-                    print("ImageX:", imageX, "ImageY:", imageY, file=sys.stderr)
-                    print("cX", cX, file=sys.stderr)
-                    print("cY", cY, file=sys.stderr)
-                    if cX >= imageX - 100 or cY >= imageY - 100:
-                        pass
-                    else:
-                        self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
-                else:
-                    cX = cY = 0
-                cv2.circle(image, (cX, cY), 2, (255, 0, 0), 3)
+        return color
 
     """
     Description: Gets the locations of pixels within a given bound and colors
@@ -225,7 +212,7 @@ class Counting:
     @param drawing - an optional parameter in case the image the results need to be drawn on
                      is different than the image the range detection was performed on.
     """
-    def removeImgAspect(self, img, minBound, maxBound, drawing=None):
+    def __removeImgAspect(self, img, minBound, maxBound, drawing=None):
         # if no drawing image is given then it becomes the original img
         if drawing is None:
             drawing = img
@@ -236,6 +223,16 @@ class Counting:
         for c in contours:
             cv2.drawContours(drawing, [c], -1, (255, 255, 255), -1)
 
+    def __findContours(self, image):
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (31, 31), 0)
+        thresh = cv2.threshold(blur, 225, 255, cv2.THRESH_BINARY_INV)[1]
+        kernel = np.ones((5,5),np.uint8)
+        erosion = cv2.erode(thresh,kernel,iterations = 1)
+        imgOutput, contours, hierarchy = cv2.findContours(erosion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        return contours
+
     """
         Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]
                     and returns a list containing tuple with the bead's average RGB values of the top 10% and boolean isWater
@@ -245,7 +242,6 @@ class Counting:
     """
 
     def checkPartial(self, circle):
-        print('checking partial', file = sys.stderr)
         img = self.colorMap
         imgY = img.shape[0]
         imgX = img.shape[1]
@@ -254,7 +250,6 @@ class Counting:
         radius = circle[2]
 
         if x + radius >= imgX or y + radius >= imgY:
-            print('found partial', file = sys.stderr)
             return True
         else:
             return False
