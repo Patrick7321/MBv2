@@ -28,14 +28,91 @@ SOFTWARE.
 
 $(window).ready(function(){
 
-	let csvFormatSelect = document.getElementById("csvFormat");
-	let csvDownloadButton = document.getElementById("csvDownload");
+	let minDistSlider = document.getElementById('min-dist-slider');
+	let minDistValue = document.getElementById('min-dist-value');
+
+	let sensSlider = document.getElementById('sens-slider');
+	let sensValue = document.getElementById('sens-value');
+
+	let minSizeSlider = document.getElementById('min-size-slider');
+	let minSizeValue = document.getElementById('min-bead-value');
+
+	let maxSizeSlider = document.getElementById('max-size-slider');
+	let maxSizeValue = document.getElementById('max-bead-value');
+
+	let csvFormatSelect = document.getElementById('csvFormat');
+	let csvDownloadButton = document.getElementById('csvDownload');
+
+	let recountButton = document.getElementById('recount-button');
 
 	let home = $('#home');
 
+	function setInitialSliderValues() {
+		minDistSlider.value = minDist;
+		minDistValue.textContent = minDist;
+
+		sensSlider.value = sensitivity;
+		sensValue.textContent = sensitivity;
+
+		minSizeSlider.value = minRadius;
+		minSizeValue.textContent = minRadius;
+
+		maxSizeSlider.value = maxRadius;
+		maxSizeValue.textContent = maxRadius;
+	}
+	
+	setInitialSliderValues();
+
+	minDistSlider.oninput = function() {
+		minDistValue.textContent = minDistSlider.value;
+	};
+
+	sensSlider.oninput = function() {
+		sensValue.textContent = sensSlider.value;
+	};
+
+	minSizeSlider.oninput = function() {
+		minSizeValue.textContent = minSizeSlider.value;
+	};
+
+	maxSizeSlider.oninput = function() {
+		maxSizeValue.textContent = maxSizeSlider.value;
+	};
+
+	recountButton.onclick = function() {
+	
+		const url = '/setParameters';
+
+		const method = 'POST';
+
+		const data = {
+			minDist: Number(minDistSlider.value),
+			sensitivity: Number(sensSlider.value),
+			minRadius: Number(minSizeSlider.value),
+			maxRadius: Number(maxSizeSlider.value)
+		}
+
+		fetch(url, {
+			method: method,
+			body: JSON.stringify(data),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		}).then(function(response) {
+			return response.json();
+		}).then(function(data) {
+			if (data.status != 0)
+				throw 'an error occurred';
+			document.location.reload();
+		}).catch(function(error) {
+			console.log(error);
+		});
+
+	};
+
 	home.click(function(e) {
 		window.location.href = '/';
-	})
+	});
 
 	csvDownloadButton.addEventListener('click', (e) => {
 		let a = document.createElement('a')

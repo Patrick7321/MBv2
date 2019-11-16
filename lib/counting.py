@@ -50,6 +50,8 @@ class HoughConfig(Enum):
     # 10x magnification
     OBJX10 = { "dp": 1,"minDist": 60,"param1": 65,"param2": 68,"minRadius": 0,"maxRadius": 125 }
 
+    DEFAULT = { "dp": 1,"minDist": 0,"param1": 50,"param2": 30,"minRadius": 0,"maxRadius": 125 }
+
 """
     Description: a class to deal with counting microbeads in a stitched image.
 """
@@ -77,36 +79,41 @@ class Counting:
         img = self.grayScaleMap
         cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
         blur = cv2.GaussianBlur(img,(7,7),0)
-        circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,dp=houghConfig["dp"],minDist=houghConfig["minDist"],
-                            param1=houghConfig["param1"],param2=houghConfig["param2"],minRadius=houghConfig["minRadius"],maxRadius=houghConfig["maxRadius"])
+        circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,
+                                    dp=houghConfig["dp"],
+                                    minDist=detectionParams.minDist,
+                                    param1=houghConfig["param1"],
+                                    param2=detectionParams.sensitivity,
+                                    minRadius=detectionParams.minRadius,
+                                    maxRadius=detectionParams.maxRadius)
 
-        circles = np.uint16(np.around(circles))
-        for i in circles[0,:]:
-            # i[0] is x coordinate, i[1] is y coordinate, i[2] is radius
-            # draw the outer circle
-            cv2.circle(cimg,(i[0],i[1]),i[2],(0,255,0),2)
-            # draw the center of the circle
-            cv2.circle(cimg,(i[0],i[1]),2,(0,0,255),3)
+        if circles is not None:
+            circles = np.uint16(np.around(circles))
+            for i in circles[0,:]:
+                # i[0] is x coordinate, i[1] is y coordinate, i[2] is radius
+                # draw the outer circle
+                cv2.circle(cimg,(i[0],i[1]),i[2],(0,255,0),2)
+                # draw the center of the circle
+                cv2.circle(cimg,(i[0],i[1]),2,(0,0,255),3)
 
-            partial = self.checkPartial(i)
+                partial = self.checkPartial(i)
 
-            if detectionParams.detectionAlgorithm == "avg":
-                color = self.getAverageColor(i)
-            elif detectionParams.detectionAlgorithm == "mid":
-                color = self.getMiddleColor(i)
-            elif detectionParams.detectionAlgorithm == "corner":
-                color = self.getFourQuadrantColor(i)
-            elif detectionParams.detectionAlgorithm == "rad":
-                color = self.getRadiusAverageColor(i)
+                if detectionParams.detectionAlgorithm == "avg":
+                    color = self.getAverageColor(i)
+                elif detectionParams.detectionAlgorithm == "mid":
+                    color = self.getMiddleColor(i)
+                elif detectionParams.detectionAlgorithm == "corner":
+                    color = self.getFourQuadrantColor(i)
+                elif detectionParams.detectionAlgorithm == "rad":
+                    color = self.getRadiusAverageColor(i)
 
-            if partial:
-                self.partialBeads.append(color)
-            elif(color[1] == 'bead'): # if the bead is a water bead, leave it out.
-                self.colorBeads.append(color)
-                result.append(color)
-            else:
-                self.waterBeads.append(color)
-        
+                if partial:
+                    self.partialBeads.append(color)
+                elif(color[1] == 'bead'): # if the bead is a water bead, leave it out.
+                    self.colorBeads.append(color)
+                    result.append(color)
+                else:
+                    self.waterBeads.append(color)
 
         if detectionParams.wantsCrushedBeads: # if the user wants to detect crushed beads.
             self.getCrushedBeads(cimg)
@@ -200,7 +207,7 @@ class Counting:
                     print("ImageX:", imageX, "ImageY:", imageY, file=sys.stderr)
                     print("cX", cX, file=sys.stderr)
                     print("cY", cY, file=sys.stderr)
-                    if cX >= imageX - 100 or cY >= imageY - 100:
+                    if cX >= imageX - 50 or cY >= imageY - 50:
                         pass
                     else:
                         self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
@@ -217,9 +224,9 @@ class Counting:
     @param drawing - an optional parameter in case the image the results need to be drawn on
                      is different than the image the range detection was performed on.
     """
-    def removeImgAspect(self, img, minBound, maxBound, drawing=[]):
+    def removeImgAspect(self, img, minBound, maxBound, drawing=None):
         # if no drawing image is given then it becomes the original img
-        if len(drawing) == 0:
+        if type(drawing) == None:
             drawing = img
 
         aspect = cv2.inRange(img, minBound, maxBound)
@@ -237,7 +244,6 @@ class Counting:
     """
 
     def checkPartial(self, circle):
-        print('checking partial', file = sys.stderr)
         img = self.colorMap
         imgY = img.shape[0]
         imgX = img.shape[1]
@@ -246,7 +252,6 @@ class Counting:
         radius = circle[2]
 
         if x + radius >= imgX or y + radius >= imgY:
-            print('found partial', file = sys.stderr)
             return True
         else:
             return False
@@ -421,7 +426,7 @@ class Counting:
         newPath = newPath.replace("maps", "results")
         currentTime = datetime.datetime.now()
         currentTimeString = currentTime.strftime("%Y-%m-%dT%H-%M-%S")
-        
+
         if colorFormat == "rgb":
                     newPath = newPath + '/rgb_' + currentTimeString + '.csv'
         elif colorFormat == "hsv":

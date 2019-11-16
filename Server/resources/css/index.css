@@ -189,3 +189,21 @@ input:checked + .slider:before {
     background: #4CAF50; /* Green background */
     cursor: pointer; /* Cursor on hover */
 }
+
+#min-bead-circle {
+    background-color: rgba(76, 175, 79, 0.685);
+}
+
+#max-bead-circle {
+    background-color: #ce1049a6;
+}
+
+.bead {
+    width: 62px;
+    height: 62px;
+    margin: auto;
+    border-radius: 7px;
+    border-radius: 50%;
+    touch-action: none;
+    user-select: none;
+}
