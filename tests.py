@@ -177,64 +177,80 @@ class TestWaterBubble(unittest.TestCase):
     #FR. 3-10
     #Error - Video
     
+class TestPartialBead(unittest.TestCase):
     #FR. 4-1
-    #Error - Colorless Bead
+    def test_single_partial_bead(self):
+        pass
     
     #FR. 4-2
-    #Error - Colorless Bead
-    
+    def test_no_partial_beads(self):
+        pass
+
     #FR. 4-3
-    #Error - Colorless Bead
+    def test_multiple_partial_bead(self):
+        pass
     
     #FR. 4-4
-    #Error - Colorless Bead
-    
+    def test_partial_bead_true_edge_major_majority(self):
+        pass
+
     #FR. 4-5
-    #Error - Colorless Bead
-    
+    def test_partial_bead_true_edge_minor_majority(self):
+        pass
+
     #FR. 4-6
-    #Error - Colorless Bead
+    def test_partial_bead_true_edge_minority(self):
+        pass
     
     #FR. 4-7
-    #Error - Colorless Bead
-    
+    def test_partial_bead_false_top_right_edge(self):
+        pass
+
     #FR. 4-8
-    #Error - Colorless Bead
+    def test_partial_bead_false_top_left_edge(self):
+        pass
     
     #FR. 4-9
-    #Error - Colorless Bead
+    def test_partial_bead_false_bottom_left_edge(self):
+        pass
     
     #FR. 4-10
-    #Error - Colorless Bead
+    def test_partial_bead_false_bottom_right_edge(self):
+        pass
     
-    #FR. 4-11
-    #Error - Colorless Bead
-    
-    #FR. 4-12
-    #Error - Colorless Bead
 
 
 class TestCSV(unittest.TestCase):
-    
+
     #FR. 5-1
+    def test_csv_rows(self):
+        pass
+
+    #FR. 5-2
+    def test_csv_type(self):
+        pass
+    
+    #FR. 5-3
     def test_rgb_csv(self):
         pass
         
-    #FR. 5-2
+    #FR. 5-4
     def test_hsv_csv(self):
         pass
         
-    #FR. 5-3
+    #FR. 5-5
     def test_cymk_csv(self):
         pass
         
-    #FR. 5-4
+    #FR. 5-6
     def test_grayscale_csv(self):
         pass
         
-    #FR. 5-5
+    #FR. 5-7
     def test_invalid_stich(self):
         pass
+
+class TestColorAlgorithms(unittest.TestCase):
         
     #FR. 6-1
     def test_default_color_algorithm(self):
@@ -255,6 +271,9 @@ class TestCSV(unittest.TestCase):
     #FR. 6-5
     def test_four_corner_color_algorithm(self):
         pass
+
+
+class TestNonFunctionalRequirements(unittest.TestCase):
         
     #NFR. 1-1
     def test_stitching_accuracy(self):
