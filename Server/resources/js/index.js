@@ -68,8 +68,10 @@ $(document).ready(function() {
     let minSizeSliderValue = minSizeSlider.value;
     let maxSizeSliderValue = maxSizeSlider.value;
 
-    minBeadCircle.height(30).width(30);
-    maxBeadCircle.height(90).width(90);
+    let initalCircleMin = calculateCircleRadius(30);
+    let initalCircleMax = calculateCircleRadius(90)
+    minBeadCircle.height(initalCircleMin).width(initalCircleMin);
+    maxBeadCircle.height(initalCircleMax).width(initalCircleMax);
 
     minSizeSlider.oninput = function() {
         if (Number(this.value) < Number(maxSizeSliderValue)) {
