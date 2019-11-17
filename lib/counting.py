@@ -112,7 +112,7 @@ class Counting:
                 elif(color[1] == 'bead'): # if the bead is a water bead, leave it out.
                     self.colorBeads.append(color)
                     result.append(color)
-                else:
+                elif(detectionParams.wantsWaterBubbles):
                     self.waterBeads.append(color)
 
         if detectionParams.wantsCrushedBeads: # if the user wants to detect crushed beads.
@@ -136,7 +136,7 @@ class Counting:
         isWater = False
 
 
-        maxRGBValue = 230
+        maxRGBValue = 240
         minRGBValue = 3
 
         if red >= maxRGBValue and green >= maxRGBValue and blue >= maxRGBValue:
@@ -432,8 +432,6 @@ class Counting:
                     newPath = newPath + '/cmyk_' + currentTimeString + '.csv'
         elif colorFormat == "grayscale":
                     newPath = newPath + '/grayscale_' + currentTimeString + '.csv'
-
-        print(newPath, file=sys.stderr)
 
         util.makeBeadsCSV(newPath, colorFormat, self.colorBeads, self.crushedBeads, self.waterBeads)
         return currentTimeString

@@ -71,9 +71,11 @@ def error():
 def uploadImagesAndConfigure():
 
     detectionParams.wantsCrushedBeads = True if request.args['wantsCrushed'] == 'true' else False # convert js 'bool' to python Bool
+    detectionParams.wantsWaterBubbles = True if request.args['wantsBubbles'] == 'true' else False
     detectionParams.detectionAlgorithm = request.args['colorAlgorithm']
     detectionParams.minRadius = int(request.args['minBead'])
     detectionParams.maxRadius = int(request.args['maxBead'])
+    
 
     if 'maglevel' in request.args:
         detectionParams.magnificationLevel = request.args['maglevel']
@@ -116,7 +118,6 @@ def getResults(directory):
 
     resultsDirectory = directory.split("/")[0]
     serverDirectory = 'Server/resources/uploads/' + directory
-    print("Server directory:", serverDirectory, file=sys.stderr)
     countingDict[resultsDirectory] = Counting(serverDirectory) # save the counting object in a dictionary for regeneration of report data
     colorBeads = countingDict[resultsDirectory].getColorBeads(magLevel, detectionParams)
 
