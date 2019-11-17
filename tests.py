@@ -320,25 +320,53 @@ class TestCrushedBeads(unittest.TestCase):
 
 class TestWaterBubble(unittest.TestCase):
 
+    def setUp(self):
+        self.one_bubble_filename = 'test/test_water_bubble_directory/single/single.jpg'
+        self.multiple_bubble_filename = 'test/test_water_bubble_directory/multiple/multiple.jpg'
+        self.no_bubble_filename = 'test/test_water_bubble_directory/none/none.jpg'
+
+        self.test_params = Parameters()
+        self.setUpParameters()
+
+    def setUpParameters(self):
+        self.test_params.detectionAlgorithm = 'mid'
+        self.test_params.wantsWaterBubbles = True
+        self.test_params.minDist = 40
+        self.test_params.sensitivity = 55
+        self.test_params.minRadius = 0
+        self.test_params.maxRadius = 75
+
     #FR. 3-1
     def test_water_bubble(self):
-        pass
+        counter = Counting(self.one_bubble_filename)
+        beads = counter.getColorBeads(HoughConfig.OBJX10, self.test_params)
+        self.assertEqual(len(counter.waterBeads), 1)
 
     #FR. 3-2
     def test_no_water_bubble(self):
-        pass
+        counter = Counting(self.no_bubble_filename)
+        beads = counter.getColorBeads(HoughConfig.OBJX10, self.test_params)
+        self.assertEqual(len(counter.waterBeads), 0)
 
     #FR. 3-3
     def test_multiple_water_bubbles(self):
-        pass
+        counter = Counting(self.multiple_bubble_filename)
+        beads = counter.getColorBeads(HoughConfig.OBJX10, self.test_params)
+        self.assertEqual(len(counter.waterBeads), 3)
 
     #FR. 3-4
     def test_water_bubble_off_with_bubble(self):
-        pass
+        self.test_params.wantsWaterBubbles = False
+        counter = Counting(self.one_bubble_filename)
+        beads = counter.getColorBeads(HoughConfig.OBJX10, self.test_params)
+        self.assertEqual(len(counter.waterBeads), 0)
 
     #FR. 3-5
     def test_water_bubble_off_without_bubble(self):
-        pass
+        self.test_params.wantsWaterBubbles = False
+        counter = Counting(self.no_bubble_filename)
+        beads = counter.getColorBeads(HoughConfig.OBJX10, self.test_params)
+        self.assertEqual(len(counter.waterBeads), 0)
 
     #FR. 3-6
     #Error - Video
