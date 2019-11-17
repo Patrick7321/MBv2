@@ -75,17 +75,8 @@ class Counting:
     def getColorBeads(self, houghConfig, detectionParams):
         houghConfig = houghConfig.value
         result = []
-
-        img = self.grayScaleMap
-        cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
-        blur = cv2.GaussianBlur(img,(7,7),0)
-        circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,
-                                    dp=houghConfig["dp"],
-                                    minDist=detectionParams.minDist,
-                                    param1=houghConfig["param1"],
-                                    param2=detectionParams.sensitivity,
-                                    minRadius=detectionParams.minRadius,
-                                    maxRadius=detectionParams.maxRadius)
+        cimg = cv2.cvtColor(self.grayScaleMap,cv2.COLOR_GRAY2BGR)
+        circles = self.findCircles(detectionParams, houghConfig)
 
         if circles is not None:
             circles = np.uint16(np.around(circles))
@@ -116,13 +107,25 @@ class Counting:
                     self.waterBeads.append(color)
 
         if detectionParams.wantsCrushedBeads: # if the user wants to detect crushed beads.
-            self.getCrushedBeads(cimg)
+            self.getCrushedBeads(cimg, detectionParams, houghConfig)
 
         imagePath = '/'.join(self.imagePath.split('/')[:-2]) + '/results/'
         imagePath += 'result_image.jpg'#+ str(fileNum) +'.jpg'
         cv2.imwrite(imagePath, cimg)
 
         return result
+
+    def findCircles(self, detectionParams, houghConfig):
+        img = self.grayScaleMap
+        blur = cv2.GaussianBlur(img,(7,7),0)
+        circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,
+                                    dp=houghConfig["dp"],
+                                    minDist=detectionParams.minDist,
+                                    param1=houghConfig["param1"],
+                                    param2=detectionParams.sensitivity,
+                                    minRadius=detectionParams.minRadius,
+                                    maxRadius=detectionParams.maxRadius)
+        return circles
 
     """
         Description: a function that takes a cicle's RGB values and returns if it is water or not
@@ -149,8 +152,17 @@ class Counting:
     Description: does preprocessing on the image map to find the crushed beads.
     @param image - image that will have the final results of the counting
     """
-    def getCrushedBeads(self, image):
-        color = self.__removeKnownObjects(image)
+    def getCrushedBeads(self, image, detectionParams, houghConfig):
+        circleInfo = []
+        knownObjects = self.colorBeads + self.waterBeads + self.partialBeads
+        circles = self.findCircles(detectionParams, houghConfig)
+
+        if circles is not None:
+            circles = np.uint16(np.around(circles))
+            for x, y, r in circles[0,:]:
+                circleInfo.append([[],[], [x, y, r]]) # to match the color layout
+
+        color = self.__removeObjects(image, knownObjects + circleInfo)
 
         # makes background an even white color
         minBg = (235, 235, 235)
@@ -188,13 +200,12 @@ class Counting:
                         cv2.drawContours(image, [c], -1, (255, 0, 0), 4)
                         cv2.circle(image, (cX, cY), 2, (255, 0, 0), 3)
 
-    def __removeKnownObjects(self, image):
+    def __removeObjects(self, image, objects):
         mask = np.ones(image.shape[:2], dtype="uint8")
-        knownObjects = self.colorBeads + self.waterBeads + self.partialBeads
 
         # takes the known objects (beads and water beads) and colors them black
         # so they can be ignored when detecting the crushed beads
-        for bead in knownObjects:
+        for bead in objects:
             cv2.circle(mask, (bead[2][0],bead[2][1]), bead[2][2], (0,0,0), -1)
             cv2.circle(mask, (bead[2][0],bead[2][1]), bead[2][2], (0,0,0), 16)
 
