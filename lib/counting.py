@@ -105,8 +105,8 @@ class Counting:
                     result.append(color)
                 else:
                     self.waterBeads.append(color)
-
-        self.GetWaterBubbles()
+        if detectionParams.wantsWaterBubbles: 
+            self.GetWaterBubbles()
 
         if detectionParams.wantsCrushedBeads: # if the user wants to detect crushed beads.
             self.getCrushedBeads(cimg, detectionParams, houghConfig)
