@@ -71,6 +71,7 @@ def error():
 def uploadImagesAndConfigure():
 
     detectionParams.wantsCrushedBeads = True if request.args['wantsCrushed'] == 'true' else False # convert js 'bool' to python Bool
+    detectionParams.wantsWaterBubbles = True if request.args['wantsBubbles'] == 'true' else False
     detectionParams.detectionAlgorithm = request.args['colorAlgorithm']
     detectionParams.minRadius = int(request.args['minBead'])
     detectionParams.maxRadius = int(request.args['maxBead'])
