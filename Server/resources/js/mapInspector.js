@@ -133,6 +133,9 @@ var imageObj = undefined; //the stitched map image
             // fill in the object information (rgb, location, radius) into the textbox
             ctx.fillText(information, rectX + 10, rectY + (rectHeight / 1.5), rectX + rectWidth);
         }
+        else {
+            redraw(ctx);
+        }
     };
 
     /*
@@ -142,7 +145,8 @@ var imageObj = undefined; //the stitched map image
         @param newRange - new height/width.
     */
     var translateCoord = function(coord,oldRange,newRange) {
-        return ((coord*newRange) / oldRange);
+        //return ((coord*newRange) / oldRange);
+        return coord;
     };
 
     /*
@@ -190,15 +194,20 @@ let drawBeads = function(beads, ctx) {
 $(window).ready(function() {
     var canvas = document.getElementById('mapCanvas'),
         canvasWrapper = $("#canvasWrapper"),
-        ctx = canvas.getContext('2d'),
-        height = canvasWrapper.height() * 2, //set the height based on the save of the canvas wrapper * 2
-        width = canvasWrapper.width(); //set the width based on the save of the canvas wrapper
+        ctx = canvas.getContext('2d');
+       // height = canvasWrapper.height() * 2, //set the height based on the save of the canvas wrapper * 2
+       // width = canvasWrapper.width(); //set the width based on the save of the canvas wrapper
     imageObj = new Image();
     imageObj.src = mapLocation;
-    ctx.canvas.width = width;
-    ctx.canvas.height = height;
+
 
     imageObj.onload = function() {
+
+        ctx.canvas.width = imageObj.width;
+        ctx.canvas.height = imageObj.height;
+
+        width = ctx.canvas.width;
+        height = ctx.canvas.height;
 
         ctx.drawImage(imageObj, 0, 0,width,height); //draw the image first
         beads.colorBeads = translateBeads(beads.colorBeads,height,width); //translate bead coordinates to fit new canvas

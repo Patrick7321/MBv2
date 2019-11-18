@@ -2,9 +2,9 @@ __pycache__
 results/
 node_modules/
 Server/resources/uploads/*
+!Server/resources/uploads/git_placeholder.txt
 test/resources/sample*/*Copy*
-uploads/
 .vscode
 venv/
-*.pyc
 mbv2/
+*.pyc

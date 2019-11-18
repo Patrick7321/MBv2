@@ -33,10 +33,11 @@ import math
 import itertools
 import csv
 import sys
+import datetime
 from enum import Enum
 from os import listdir, path
 from . import util
-from . import color_labeler
+from . import colorLabeler
 
 """
     Description: an enum class to handle the HoughCircle configuration values that are used in cv2.HoughCircles().
@@ -49,6 +50,8 @@ class HoughConfig(Enum):
     # 10x magnification
     OBJX10 = { "dp": 1,"minDist": 60,"param1": 65,"param2": 68,"minRadius": 0,"maxRadius": 125 }
 
+    DEFAULT = { "dp": 1,"minDist": 0,"param1": 50,"param2": 30,"minRadius": 0,"maxRadius": 125 }
+
 """
     Description: a class to deal with counting microbeads in a stitched image.
 """
@@ -58,9 +61,12 @@ class Counting:
         self.imagePath = imagePath
         self.grayScaleMap = cv2.imread(imagePath,0) # create grayscale cv2 img
         self.colorMap = cv2.imread(imagePath) # create color cv2 img
+        self.labMap = cv2.cvtColor(self.colorMap, cv2.COLOR_BGR2Lab)
         self.colorBeads = []
-        self.crushedBeads = []
         self.waterBeads = []
+        self.partialBeads = []
+        self.crushedBeads = []
+
     """
         Description: a function that takes a map of images and counts the beads.
         @Param houghConfig - a HoughConfig object that contains the values for the HoughCircles() function
@@ -69,53 +75,53 @@ class Counting:
     def getColorBeads(self, houghConfig, detectionParams):
         houghConfig = houghConfig.value
         result = []
+        cimg = cv2.cvtColor(self.grayScaleMap,cv2.COLOR_GRAY2BGR)
+        circles = self.findCircles(detectionParams, houghConfig)
 
-        img = self.grayScaleMap
-        cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
-        blur = cv2.GaussianBlur(img,(7,7),0)
-        circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,dp=houghConfig["dp"],minDist=houghConfig["minDist"],
-                            param1=houghConfig["param1"],param2=houghConfig["param2"],minRadius=houghConfig["minRadius"],maxRadius=houghConfig["maxRadius"])
+        if circles is not None:
+            circles = np.uint16(np.around(circles))
+            for i in circles[0,:]:
+                # i[0] is x coordinate, i[1] is y coordinate, i[2] is radius
+                # draw the outer circle
+                cv2.circle(cimg,(i[0],i[1]),i[2],(0,255,0),2)
+                # draw the center of the circle
+                cv2.circle(cimg,(i[0],i[1]),2,(0,0,255),3)
 
-        circles = np.uint16(np.around(circles))
-        for i in circles[0,:]:
-            # i[0] is x coordinate, i[1] is y coordinate, i[2] is radius
-            # draw the outer circle
-            cv2.circle(cimg,(i[0],i[1]),i[2],(0,255,0),2)
-            # draw the center of the circle
-            cv2.circle(cimg,(i[0],i[1]),2,(0,0,255),3)
+                partial = self.checkPartial(i)
 
+                if detectionParams.detectionAlgorithm == "avg":
+                    color = self.getAverageColor(i)
+                elif detectionParams.detectionAlgorithm == "mid":
+                    color = self.getMiddleColor(i)
+                elif detectionParams.detectionAlgorithm == "corner":
+                    color = self.getFourQuadrantColor(i)
+                elif detectionParams.detectionAlgorithm == "rad":
+                    color = self.getRadiusAverageColor(i)
 
-            if detectionParams.detectionAlgorithm == "avg":
-                color = self.getAverageColor(i)
-            elif detectionParams.detectionAlgorithm == "mid":
-                color = self.getMiddleColor(i)
-            elif detectionParams.detectionAlgorithm == "corner":
-                color = self.getFourQuadrantColor(i)
-            elif detectionParams.detectionAlgorithm == "rad":
-                color = self.getRadiusAverageColor(i)
+                if partial:
+                    self.partialBeads.append(color)
+                elif(color[1] == 'bead'): # if the bead is a water bead, leave it out.
+                    self.colorBeads.append(color)
+                    result.append(color)
+                else:
+                    self.waterBeads.append(color)
 
-
-            if(color[1] == 'bead'): # if the bead is a water bead, leave it out.
-                self.colorBeads.append(color)
-                result.append(color)
-            
-        #Get the water bubble array that contains the xy coordinates and the size.
-        if detectionParams.wantsWaterBubbles: 
-            self.GetWaterBubbles()
+        self.GetWaterBubbles()
 
         if detectionParams.wantsCrushedBeads: # if the user wants to detect crushed beads.
-            self.getCrushedBeads(cimg, circles)
+            self.getCrushedBeads(cimg, detectionParams, houghConfig)
 
         imagePath = '/'.join(self.imagePath.split('/')[:-2]) + '/results/'
         imagePath += 'result_image.jpg'#+ str(fileNum) +'.jpg'
         cv2.imwrite(imagePath, cimg)
 
         return result
-
+    
     """
-        Description: a function that takes an image and finds the water bubbles in it
-        @return an array with x,y coordinates for the center of each water bubble and the size of the water bubble
+    Description: a function that takes an image and finds the water bubbles in it
+    @return an array with x,y coordinates for the center of each water bubble and the size of the water bubble
     """
+    
     def GetWaterBubbles(self):
         # Read image
         im = self.colorMap
@@ -134,7 +140,7 @@ class Counting:
         params.maxThreshold = 200
         # Filter by Area.
         params.filterByArea = True
-        params.minArea = 16
+        params.minArea = 600
         params.maxArea = 10000
         # Filter by Circularity
         params.filterByCircularity = False
@@ -159,48 +165,27 @@ class Counting:
             radius = np.sqrt(keypoint.size / 3.1415)
             if radius < 1:
                 radius = 1
-            BGRValue = im[x, y]
+            BGRValue = im[x - 3, y - 3]
             if BGRValue[2] >= 50 and BGRValue[1] >= 50 and BGRValue[0] >= 50:
                 self.waterBeads.append([[0, 0, 0], 'waterBead', [y, x, radius]])
-        
 
-    def getCrushedBeads(self, image, circles):
-        temp_img = self.grayScaleMap.copy()
+    def findCircles(self, detectionParams, houghConfig):
+        img = self.grayScaleMap
+        blur = cv2.GaussianBlur(img,(7,7),0)
+        circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,
+                                    dp=houghConfig["dp"],
+                                    minDist=detectionParams.minDist,
+                                    param1=houghConfig["param1"],
+                                    param2=detectionParams.sensitivity,
+                                    minRadius=detectionParams.minRadius,
+                                    maxRadius=detectionParams.maxRadius)
+        return circles
 
-        for i in circles[0,:]:
-            # fills in the circle
-            cv2.circle(temp_img, (i[0],i[1]) ,i[2], (255,255,255), -1)
-            #fills the outer edges of the circle
-            cv2.circle(temp_img,(i[0], i[1]), i[2], (255,255,255), 17)
-
-
-        blur = cv2.GaussianBlur(temp_img, (19, 19), 0)
-        lab = cv2.cvtColor(self.colorMap, cv2.COLOR_BGR2LAB)
-        thresh = cv2.threshold(blur, 225, 255, cv2.THRESH_BINARY_INV)[1]
-        img_output, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        cl = color_labeler.ColorLabeler()
-
-        for c in contours:
-            color = cl.label(lab, c)
-
-            if color not in cl.colorsToIgnore:
-                cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
-
-                # compute the center of the contour
-                M = cv2.moments(c)
-                if M['m00'] > 0:
-                    cX = int((M["m10"] / M["m00"]))
-                    cY = int((M["m01"] / M["m00"]))
-                    self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
-                else:
-                    cX = 0
-                    cY = 0
-                cv2.circle(image, (cX, cY), 2, (0, 255, 0), 3)
-
-    #Description: a function that takes a cicle's RGB values and returns if it is water or not
-    #@param RGB - tuple containing the average red, green, and blue values of a circle
-    #@return a boolean that will be True if the circle is water           
+    """
+        Description: a function that takes a cicle's RGB values and returns if it is water or not
+        @param RGB - tuple containing the average red, green, and blue values of a circle
+        @return a boolean that will be True if the circle is water
+    """
     def isWater(self, RGB):
         red = RGB[0]
         green = RGB[1]
@@ -217,6 +202,100 @@ class Counting:
             isWater = True
         return isWater
 
+    """
+    Description: does preprocessing on the image map to find the crushed beads.
+    @param image - image that will have the final results of the counting
+    """
+    def getCrushedBeads(self, image, detectionParams, houghConfig):
+        circleInfo = []
+        knownObjects = self.colorBeads + self.waterBeads + self.partialBeads
+        circles = self.findCircles(detectionParams, houghConfig)
+
+        if circles is not None:
+            circles = np.uint16(np.around(circles))
+            for x, y, r in circles[0,:]:
+                circleInfo.append([[],[], [x, y, r]]) # to match the color layout
+
+        color = self.__removeObjects(image, knownObjects + circleInfo)
+
+        # makes background an even white color
+        minBg = (235, 235, 235)
+        maxBg = (255, 255, 255)
+        self.__removeImgAspect(color, minBg, maxBg)
+
+        # removes black edges caused by stitching
+        minBlack = (0, 0, 0)
+        maxBlack = (10, 10, 10)
+        self.__removeImgAspect(color, minBlack, maxBlack)
+
+        lab = cv2.cvtColor(color, cv2.COLOR_BGR2LAB)
+
+        # removes black borders
+        minBorder = (0, 0, 0)
+        maxBorder = (180, 190, 130)
+        self.__removeImgAspect(lab, minBorder, maxBorder, drawing=color)
+
+        contours = self.__findContours(color)
+        cl = colorLabeler.ColorLabeler()
+
+        imageY = image.shape[0]
+        imageX = image.shape[1]
+        for c in contours:
+            color_label = cl.label(self.labMap, c)
+            if color_label not in cl.colorsToIgnore:
+                M = cv2.moments(c)
+                if M['m00'] > 0:
+                    cX = int((M["m10"] / M["m00"]))
+                    cY = int((M["m01"] / M["m00"]))
+                    if cX >= imageX - 50 or cY >= imageY - 50:
+                        pass
+                    else:
+                        self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
+                        cv2.drawContours(image, [c], -1, (255, 0, 0), 4)
+                        cv2.circle(image, (cX, cY), 2, (255, 0, 0), 3)
+
+    def __removeObjects(self, image, objects):
+        mask = np.ones(image.shape[:2], dtype="uint8")
+
+        # takes the known objects (beads and water beads) and colors them black
+        # so they can be ignored when detecting the crushed beads
+        for bead in objects:
+            cv2.circle(mask, (bead[2][0],bead[2][1]), bead[2][2], (0,0,0), -1)
+            cv2.circle(mask, (bead[2][0],bead[2][1]), bead[2][2], (0,0,0), 16)
+
+        color = cv2.bitwise_and(self.colorMap, self.colorMap, mask=mask)
+
+        return color
+
+    """
+    Description: Gets the locations of pixels within a given bound and colors
+    them white so they will not be picked up during image detection
+    @param img - the image used to find the pixels withing a given range
+    @param minBound - the lower bound of a pixel's color intensity
+    @param maxBound - the upper bound of a pixel's color intensity
+    @param drawing - an optional parameter in case the image the results need to be drawn on
+                     is different than the image the range detection was performed on.
+    """
+    def __removeImgAspect(self, img, minBound, maxBound, drawing=None):
+        # if no drawing image is given then it becomes the original img
+        if drawing is None:
+            drawing = img
+
+        aspect = cv2.inRange(img, minBound, maxBound)
+        imgOutput, contours, hierarchy = cv2.findContours(aspect, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        for c in contours:
+            cv2.drawContours(drawing, [c], -1, (255, 255, 255), -1)
+
+    def __findContours(self, image):
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (31, 31), 0)
+        thresh = cv2.threshold(blur, 225, 255, cv2.THRESH_BINARY_INV)[1]
+        kernel = np.ones((5,5),np.uint8)
+        erosion = cv2.erode(thresh,kernel,iterations = 1)
+        imgOutput, contours, hierarchy = cv2.findContours(erosion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        return contours
 
     """
         Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]
@@ -225,6 +304,20 @@ class Counting:
         @param imageMap - a map (image) of the microscope images in color.
         @return a list containing tuple with average RGB values of top 10% from bead, boolean isWater, and x,y,radius value of the bead.
     """
+
+    def checkPartial(self, circle):
+        img = self.colorMap
+        imgY = img.shape[0]
+        imgX = img.shape[1]
+        x = circle[0]
+        y = circle[1]
+        radius = circle[2]
+
+        if x + radius >= imgX or y + radius >= imgY:
+            return True
+        else:
+            return False
+
     def getBrightestColor(self, circleInfo):
         img = self.colorMap
         imgY = img.shape[0]
@@ -393,6 +486,19 @@ class Counting:
         endIndex = newPath.rfind("/")
         newPath = newPath[:endIndex]
         newPath = newPath.replace("maps", "results")
-        newPath = newPath + "/beads.csv"
+        currentTime = datetime.datetime.now()
+        currentTimeString = currentTime.strftime("%Y-%m-%dT%H-%M-%S")
 
-        util.makeBeadsCSV(newPath, colorFormat, self.colorBeads)
+        if colorFormat == "rgb":
+                    newPath = newPath + '/rgb_' + currentTimeString + '.csv'
+        elif colorFormat == "hsv":
+                    newPath = newPath + '/hsv_' + currentTimeString + '.csv'
+        elif colorFormat == "cmyk":
+                    newPath = newPath + '/cmyk_' + currentTimeString + '.csv'
+        elif colorFormat == "grayscale":
+                    newPath = newPath + '/grayscale_' + currentTimeString + '.csv'
+
+        print(newPath, file=sys.stderr)
+
+        util.makeBeadsCSV(newPath, colorFormat, self.colorBeads, self.crushedBeads, self.waterBeads)
+        return currentTimeString

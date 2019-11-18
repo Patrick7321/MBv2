@@ -81,6 +81,7 @@ SOFTWARE.
     margin-left: .5em !important;
 }
 
+
 /* From here until slider.round:before references the toggles on the form */
 .switch {
     position: relative;
@@ -187,4 +188,20 @@ input:checked + .slider:before {
     height: 25px; /* Slider handle height */
     background: #4CAF50; /* Green background */
     cursor: pointer; /* Cursor on hover */
+}
+
+#min-bead-circle {
+    background-color: rgba(76, 175, 79, 0.685);
+}
+
+#max-bead-circle {
+    background-color: #ce1049a6;
+}
+
+.bead {
+    margin: auto;
+    border-radius: 7px;
+    border-radius: 50%;
+    touch-action: none;
+    user-select: none;
 }
