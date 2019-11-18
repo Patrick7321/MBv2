@@ -60,16 +60,16 @@ class TestBeadSize(unittest.TestCase):
 
     #FR. 1-7
     def test_default_size_bounds(self):
-        self.test_params.beadUpperBound = 80;
-        self.test_params.beadLowerBound = 30;
+        self.test_params.beadUpperBound = 80
+        self.test_params.beadLowerBound = 30
         self.test_params.detectionAlgorithm = "mid"
         beads = self.test_count.getColorBeads(HoughConfig.OBJX10, self.test_params)
         self.assertEqual(len(beads), 0)
 
     #FR. 1-8
     def test_upper_bound_equal_to_lower_bound(self):
-        self.test_params.beadUpperBound = 40;
-        self.test_params.beadLowerBound = 40;
+        self.test_params.beadUpperBound = 40
+        self.test_params.beadLowerBound = 40
         self.test_params.detectionAlgorithm = "mid"
         beads = self.test_count.getColorBeads(HoughConfig.OBJX10, self.test_params)
         #this should return an error
@@ -138,8 +138,8 @@ class TestCrushedBeads(unittest.TestCase):
     def test_crushed_bead_off_with_crushed(self):
         test_count = Counting('test/test_crushed_bead_directory/images/multiple_crushed.jpg')
 
-        self.test_params.beadUpperBound = 40;
-        self.test_params.beadLowerBound = 60;
+        self.test_params.beadUpperBound = 40
+        self.test_params.beadLowerBound = 60
         self.test_params.detectionAlgorithm = "mid"
         self.test_params.wantsCrushedBeads = False
 
@@ -152,8 +152,8 @@ class TestCrushedBeads(unittest.TestCase):
     def test_crushed_bead_off_without_crushed(self):
         test_count = Counting('test/test_crushed_bead_directory/images/no_crushed.jpg')
 
-        self.test_params.beadUpperBound = 40;
-        self.test_params.beadLowerBound = 60;
+        self.test_params.beadUpperBound = 40
+        self.test_params.beadLowerBound = 60
         self.test_params.detectionAlgorithm = "mid"
         self.test_params.wantsCrushedBeads = False
 
@@ -169,8 +169,8 @@ class TestCrushedBeads(unittest.TestCase):
         test_count = Counting('test/test_crushed_bead_directory/maps/stitched_map.jpg')
         cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
 
-        self.test_params.beadUpperBound = 20;
-        self.test_params.beadLowerBound = 60;
+        self.test_params.beadUpperBound = 20
+        self.test_params.beadLowerBound = 60
         self.test_params.detectionAlgorithm = "mid"
         self.test_params.wantsCrushedBeads = True
         self.test_params.sensitivity = 50
@@ -186,8 +186,8 @@ class TestCrushedBeads(unittest.TestCase):
         test_count = Counting('test/test_crushed_bead_directory/images/black_borders.jpg')
         cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
 
-        self.test_params.beadUpperBound = 20;
-        self.test_params.beadLowerBound = 60;
+        self.test_params.beadUpperBound = 20
+        self.test_params.beadLowerBound = 60
         self.test_params.detectionAlgorithm = "mid"
         self.test_params.wantsCrushedBeads = True
         self.test_params.sensitivity = 50
@@ -203,8 +203,8 @@ class TestCrushedBeads(unittest.TestCase):
         test_count = Counting('test/test_crushed_bead_directory/images/borders_with_no_crushed.jpg')
         cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
 
-        self.test_params.beadUpperBound = 20;
-        self.test_params.beadLowerBound = 60;
+        self.test_params.beadUpperBound = 20
+        self.test_params.beadLowerBound = 60
         self.test_params.detectionAlgorithm = "mid"
         self.test_params.wantsCrushedBeads = True
         self.test_params.sensitivity = 50
@@ -220,8 +220,8 @@ class TestCrushedBeads(unittest.TestCase):
         test_count = Counting('test/test_crushed_bead_directory/maps/stitched_no_crushed.jpg')
         cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
 
-        self.test_params.beadUpperBound = 20;
-        self.test_params.beadLowerBound = 50;
+        self.test_params.beadUpperBound = 20
+        self.test_params.beadLowerBound = 50
         self.test_params.detectionAlgorithm = "mid"
         self.test_params.wantsCrushedBeads = True
         self.test_params.sensitivity = 50
@@ -237,8 +237,8 @@ class TestCrushedBeads(unittest.TestCase):
         test_count = Counting('test/test_crushed_bead_directory/maps/stitched_and_borders_no_crushed.jpg')
         cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
 
-        self.test_params.beadUpperBound = 20;
-        self.test_params.beadLowerBound = 50;
+        self.test_params.beadUpperBound = 20
+        self.test_params.beadLowerBound = 50
         self.test_params.detectionAlgorithm = "mid"
         self.test_params.wantsCrushedBeads = True
         self.test_params.sensitivity = 50
@@ -254,8 +254,8 @@ class TestCrushedBeads(unittest.TestCase):
         test_count = Counting('test/test_crushed_bead_directory/images/multiple_colors.jpg')
         cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
 
-        self.test_params.beadUpperBound = 20;
-        self.test_params.beadLowerBound = 40;
+        self.test_params.beadUpperBound = 20
+        self.test_params.beadLowerBound = 40
         self.test_params.detectionAlgorithm = "mid"
         self.test_params.wantsCrushedBeads = True
         self.test_params.sensitivity = 40
@@ -271,8 +271,8 @@ class TestCrushedBeads(unittest.TestCase):
         test_count = Counting('test/test_crushed_bead_directory/images/cracked_beads.jpg')
         cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
 
-        self.test_params.beadUpperBound = 20;
-        self.test_params.beadLowerBound = 60;
+        self.test_params.beadUpperBound = 20
+        self.test_params.beadLowerBound = 60
         self.test_params.detectionAlgorithm = "mid"
         self.test_params.wantsCrushedBeads = True
         self.test_params.sensitivity = 40
@@ -288,8 +288,8 @@ class TestCrushedBeads(unittest.TestCase):
         test_count = Counting('test/test_crushed_bead_directory/images/cracked_beads.jpg')
         cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
 
-        self.test_params.beadUpperBound = 20;
-        self.test_params.beadLowerBound = 60;
+        self.test_params.beadUpperBound = 20
+        self.test_params.beadLowerBound = 60
         self.test_params.detectionAlgorithm = "mid"
         self.test_params.wantsCrushedBeads = False
         self.test_params.sensitivity = 50
@@ -305,8 +305,8 @@ class TestCrushedBeads(unittest.TestCase):
         test_count = Counting('test/test_crushed_bead_directory/maps/black_borders_and_edges.jpg')
         cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
 
-        self.test_params.beadUpperBound = 20;
-        self.test_params.beadLowerBound = 60;
+        self.test_params.beadUpperBound = 20
+        self.test_params.beadLowerBound = 60
         self.test_params.detectionAlgorithm = "mid"
         self.test_params.wantsCrushedBeads = True
         self.test_params.sensitivity = 50
