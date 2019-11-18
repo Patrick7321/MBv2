@@ -17,6 +17,7 @@ class ColorLabeler:
             "gray": (96, 96, 96),
             "darkgray": (70, 70, 70),
             "white": (255, 255, 255),
+			"lightblue": (135,206,250),
             })
 
 		self.lab = np.zeros((len(colors), 1, 3), dtype="uint8")

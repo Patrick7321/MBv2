@@ -43,7 +43,7 @@ class TestBeadSize(unittest.TestCase):
         self.test_params.detectionAlgorithm = "mid"
         beads = self.test_count.getColorBeads(HoughConfig.DEFAULT, self.test_params)
         self.assertEqual(len(beads), 0)
-        
+
     #FR. 1-4
     def test_upper_bound_smaller_than_lower_bound(self):
         self.test_params.maxRadius = 50
@@ -51,7 +51,7 @@ class TestBeadSize(unittest.TestCase):
         self.test_params.detectionAlgorithm = "mid"
         beads = self.test_count.getColorBeads(HoughConfig.DEFAULT, self.test_params)
         #this should return an error
-        
+
     #FR. 1-5
     def test_upper_bound_smaller_than_lower_default(self):
         self.test_params.maxRadius = 10
@@ -59,7 +59,7 @@ class TestBeadSize(unittest.TestCase):
         self.test_params.detectionAlgorithm = "mid"
         beads = self.test_count.getColorBeads(HoughConfig.DEFAULT, self.test_params)
         #this should return an error
-        
+
     #FR. 1-6
     def test_lower_bound_larger_than_upper_default(self):
         self.test_params.maxRadius = 80
@@ -67,7 +67,7 @@ class TestBeadSize(unittest.TestCase):
         self.test_params.detectionAlgorithm = "mid"
         beads = self.test_count.getColorBeads(HoughConfig.DEFAULT, self.test_params)
         #this should return an error
-        
+
     #FR. 1-7
     def test_default_size_bounds(self):
         self.test_params.maxRadius = 80;
@@ -75,7 +75,7 @@ class TestBeadSize(unittest.TestCase):
         self.test_params.detectionAlgorithm = "mid"
         beads = self.test_count.getColorBeads(HoughConfig.DEFAULT, self.test_params)
         self.assertEqual(len(beads), 0)
-        
+
     #FR. 1-8
     def test_upper_bound_equal_to_lower_bound(self):
         self.test_params.maxRadius = 40;
@@ -83,71 +83,249 @@ class TestBeadSize(unittest.TestCase):
         self.test_params.detectionAlgorithm = "mid"
         beads = self.test_count.getColorBeads(HoughConfig.DEFAULT, self.test_params)
         #this should return an error
-        
+
     #FR. 1-9
     #Error - Video
 
     #FR. 1-10
     #Error - Video
-    
+
     #FR. 1-11
     #Error - Video
-    
+
 
 class TestCrushedBeads(unittest.TestCase):
 
     def setUp(self):
-        self.test_count = Counting('test/test_crushed_bead_directory/maps/result_default.jpg')
         self.test_params = Parameters()
 
     #FR. 2-1
     def test_single_crushed_bead(self):
-        pass
-    
+        test_count = Counting('test/test_crushed_bead_directory/images/one_crushed.jpg')
+        cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
+
+        self.test_params.wantsCrushedBeads = True
+        self.test_params.minRadius = 0
+        self.test_params.maxRadius = 125
+        self.test_params.detectionAlgorithm = "mid"
+
+        test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX10.value)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 1)
+
     #FR. 2-2
     def test_no_crushed_beads(self):
-        pass
-        
+        test_count = Counting('test/test_crushed_bead_directory/images/no_crushed.jpg')
+        cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
+
+        self.test_params.wantsCrushedBeads = True
+        self.test_params.minRadius = 30
+        self.test_params.maxRadius = 60
+        self.test_params.detectionAlgorithm = "mid"
+
+        test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX4.value)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 0)
+
     #FR. 2-3
     def test_multiple_crushed_bead(self):
-        pass
-        
+        test_count = Counting('test/test_crushed_bead_directory/images/multiple_crushed.jpg')
+        cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
+
+        self.test_params.wantsCrushedBeads = True
+        self.test_params.minRadius = 30
+        self.test_params.maxRadius = 60
+        self.test_params.detectionAlgorithm = "mid"
+
+        test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX4.value)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 5)
+
     #FR. 2-4
     def test_crushed_bead_off_with_crushed(self):
-        pass
-        
+        test_count = Counting('test/test_crushed_bead_directory/images/multiple_crushed.jpg')
+
+        self.test_params.beadUpperBound = 40;
+        self.test_params.beadLowerBound = 60;
+        self.test_params.detectionAlgorithm = "mid"
+        self.test_params.wantsCrushedBeads = False
+
+        test_count.getColorBeads(HoughConfig.OBJX4, self.test_params)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 0)
+
     #FR. 2-5
     def test_crushed_bead_off_without_crushed(self):
-        pass
-        
+        test_count = Counting('test/test_crushed_bead_directory/images/no_crushed.jpg')
+
+        self.test_params.beadUpperBound = 40;
+        self.test_params.beadLowerBound = 60;
+        self.test_params.detectionAlgorithm = "mid"
+        self.test_params.wantsCrushedBeads = False
+
+        test_count.getColorBeads(HoughConfig.OBJX4, self.test_params)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 0)
+
     #FR. 2-6
-    #Error - Video
-    
+    # Tests to make sure the black edges from a stitched image do not affect
+    # the detection results
+    def test_crushed_bead_with_stitched_image(self):
+        test_count = Counting('test/test_crushed_bead_directory/maps/stitched_map.jpg')
+        cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
+
+        self.test_params.beadUpperBound = 20;
+        self.test_params.beadLowerBound = 60;
+        self.test_params.detectionAlgorithm = "mid"
+        self.test_params.wantsCrushedBeads = True
+        self.test_params.sensitivity = 50
+        self.test_params.minRadius = 20
+
+        test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX4.value)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 5)
+
     #FR. 2-7
-    #Error - Video
-    
+    def test_crushed_bead_with_black_borders(self):
+        test_count = Counting('test/test_crushed_bead_directory/images/black_borders.jpg')
+        cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
+
+        self.test_params.beadUpperBound = 20;
+        self.test_params.beadLowerBound = 60;
+        self.test_params.detectionAlgorithm = "mid"
+        self.test_params.wantsCrushedBeads = True
+        self.test_params.sensitivity = 50
+        self.test_params.minRadius = 20
+
+        test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX4.value)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 4)
+
     #FR. 2-8
-    #Error - Video
-    
-    #FR. 2-9
-    #Error - Video
+    def test_crushed_bead_with_black_borders_no_crushed_beads(self):
+        test_count = Counting('test/test_crushed_bead_directory/images/borders_with_no_crushed.jpg')
+        cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
+
+        self.test_params.beadUpperBound = 20;
+        self.test_params.beadLowerBound = 60;
+        self.test_params.detectionAlgorithm = "mid"
+        self.test_params.wantsCrushedBeads = True
+        self.test_params.sensitivity = 50
+        self.test_params.minRadius = 20
+
+        test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX4.value)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 0)
+
+    #FR. 2-9  test/test_crushed_bead_directory/maps/stitched_no_crushed.jpg
+    def test_crushed_bead_with_stitched_image_no_crushed_beads(self):
+        test_count = Counting('test/test_crushed_bead_directory/maps/stitched_no_crushed.jpg')
+        cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
+
+        self.test_params.beadUpperBound = 20;
+        self.test_params.beadLowerBound = 50;
+        self.test_params.detectionAlgorithm = "mid"
+        self.test_params.wantsCrushedBeads = True
+        self.test_params.sensitivity = 50
+        self.test_params.minRadius = 20
+
+        test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX4.value)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 0)
 
     #FR. 2-10
-    #Error - Video
-    
-    #FR. 2-11
-    def test_cracked_beads_with_crushed(self):
-        pass
-        
+    def test_crushed_beads_with_black_borders_and_edges_no_crushed_beads(self):
+        test_count = Counting('test/test_crushed_bead_directory/maps/stitched_and_borders_no_crushed.jpg')
+        cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
+
+        self.test_params.beadUpperBound = 20;
+        self.test_params.beadLowerBound = 50;
+        self.test_params.detectionAlgorithm = "mid"
+        self.test_params.wantsCrushedBeads = True
+        self.test_params.sensitivity = 50
+        self.test_params.minRadius = 20
+
+        test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX4.value)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 0)
+
+    #FR. 2-11 test/test_crushed_bead_directory/images/multiple_colors.jpg
+    def test_crushed_bead_with_colored_crushed_areas(self):
+        test_count = Counting('test/test_crushed_bead_directory/images/multiple_colors.jpg')
+        cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
+
+        self.test_params.beadUpperBound = 20;
+        self.test_params.beadLowerBound = 40;
+        self.test_params.detectionAlgorithm = "mid"
+        self.test_params.wantsCrushedBeads = True
+        self.test_params.sensitivity = 40
+        self.test_params.minRadius = 20
+
+        test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX4.value)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 1)
+
     #FR. 2-12
-    def test_cracked_beads_without_crushed(self):
-        pass
-        
+    def test_cracked_beads_with_crushed(self):
+        test_count = Counting('test/test_crushed_bead_directory/images/cracked_beads.jpg')
+        cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
+
+        self.test_params.beadUpperBound = 20;
+        self.test_params.beadLowerBound = 60;
+        self.test_params.detectionAlgorithm = "mid"
+        self.test_params.wantsCrushedBeads = True
+        self.test_params.sensitivity = 40
+        self.test_params.minRadius = 20
+
+        test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX4.value)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 2)
+
     #FR. 2-13
-    #Error - Video
-    
+    def test_cracked_beads_without_crushed(self):
+        test_count = Counting('test/test_crushed_bead_directory/images/cracked_beads.jpg')
+        cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
+
+        self.test_params.beadUpperBound = 20;
+        self.test_params.beadLowerBound = 60;
+        self.test_params.detectionAlgorithm = "mid"
+        self.test_params.wantsCrushedBeads = False
+        self.test_params.sensitivity = 50
+        self.test_params.minRadius = 20
+
+        test_count.getColorBeads(HoughConfig.OBJX4, self.test_params)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 0)
+
     #FR. 2-14
-    #Error - Video
+    def test_crushed_beads_with_black_borders_and_edges(self):
+        test_count = Counting('test/test_crushed_bead_directory/maps/black_borders_and_edges.jpg')
+        cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
+
+        self.test_params.beadUpperBound = 20;
+        self.test_params.beadLowerBound = 60;
+        self.test_params.detectionAlgorithm = "mid"
+        self.test_params.wantsCrushedBeads = True
+        self.test_params.sensitivity = 50
+        self.test_params.minRadius = 20
+
+        test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX4.value)
+
+        crushedCount = len(test_count.crushedBeads)
+        self.assertEqual(crushedCount, 4)
 
 
 class TestWaterBubble(unittest.TestCase):
@@ -167,19 +345,19 @@ class TestWaterBubble(unittest.TestCase):
         self.test_params.sensitivity = 55
         self.test_params.minRadius = 0
         self.test_params.maxRadius = 75
-    
+
     #FR. 3-1
     def test_water_bubble(self):
         counter = Counting(self.one_bubble_filename)
         beads = counter.getColorBeads(HoughConfig.OBJX10, self.test_params)
         self.assertEqual(len(counter.waterBeads), 1)
-        
+
     #FR. 3-2
     def test_no_water_bubble(self):
         counter = Counting(self.no_bubble_filename)
         beads = counter.getColorBeads(HoughConfig.OBJX10, self.test_params)
         self.assertEqual(len(counter.waterBeads), 0)
-    
+
     #FR. 3-3
     def test_multiple_water_bubbles(self):
         counter = Counting(self.multiple_bubble_filename)
@@ -192,29 +370,29 @@ class TestWaterBubble(unittest.TestCase):
         counter = Counting(self.one_bubble_filename)
         beads = counter.getColorBeads(HoughConfig.OBJX10, self.test_params)
         self.assertEqual(len(counter.waterBeads), 0)
-        
+
     #FR. 3-5
     def test_water_bubble_off_without_bubble(self):
         self.test_params.wantsWaterBubbles = False
         counter = Counting(self.no_bubble_filename)
         beads = counter.getColorBeads(HoughConfig.OBJX10, self.test_params)
         self.assertEqual(len(counter.waterBeads), 0)
-        
+
     #FR. 3-6
     #Error - Video
-    
+
     #FR. 3-7
     #Error - Video
-    
+
     #FR. 3-8
     #Error - Video
-    
+
     #FR. 3-9
     #Error - Video
-    
+
     #FR. 3-10
     #Error - Video
-    
+
 class TestPartialBead(unittest.TestCase):
 
 
@@ -268,7 +446,7 @@ class TestPartialBead(unittest.TestCase):
     #FR. 4-6
     def test_partial_bead_true_edge_minority(self):
         pass
-    
+
     #FR. 4-7
     def test_partial_bead_false_top_right_edge(self):
         pass
@@ -276,15 +454,15 @@ class TestPartialBead(unittest.TestCase):
     #FR. 4-8
     def test_partial_bead_false_top_left_edge(self):
         pass
-    
+
     #FR. 4-9
     def test_partial_bead_false_bottom_left_edge(self):
         pass
-    
+
     #FR. 4-10
     def test_partial_bead_false_bottom_right_edge(self):
         pass
-    
+
 
 
 class TestCSV(unittest.TestCase):
@@ -424,7 +602,7 @@ class TestCSV(unittest.TestCase):
         csv_file.close()
         os.remove('test/test_csv_directory/results/grayscale_' + file_timestamp + '.csv')
         self.assertTrue(correct_file)
-        
+
     #FR. 5-7
     def test_invalid_stich(self):
         pass
@@ -619,15 +797,15 @@ class TestColorAlgorithms(unittest.TestCase):
 
 
 class TestNonFunctionalRequirements(unittest.TestCase):
-        
+
     #NFR. 1-1
     def test_stitching_accuracy(self):
         pass
-        
+
     #NFR. 1-2
     def test_counting_accuracy(self):
         pass
-    
-    
+
+
 if __name__ == '__main__':
     unittest.main()

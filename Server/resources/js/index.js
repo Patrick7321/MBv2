@@ -69,8 +69,10 @@ $(document).ready(function() {
     let minSizeSliderValue = minSizeSlider.value;
     let maxSizeSliderValue = maxSizeSlider.value;
 
-    minBeadCircle.height(30).width(30);
-    maxBeadCircle.height(90).width(90);
+    let initalCircleMin = calculateCircleRadius(30);
+    let initalCircleMax = calculateCircleRadius(90)
+    minBeadCircle.height(initalCircleMin).width(initalCircleMin);
+    maxBeadCircle.height(initalCircleMax).width(initalCircleMax);
 
     minSizeSlider.oninput = function() {
         if (Number(this.value) < Number(maxSizeSliderValue)) {
@@ -241,6 +243,7 @@ $(document).ready(function() {
 
         let data = new FormData(imageForm[0]);
         let crushedBeadDetection = crushedBeadCheckbox[0].checked;
+        let waterBubbleDetection = waterBubbleCheckbox[0].checked;
         let selectedColorAlgorithm = colorAlgorithm.value;
         let minBead = Number(minBeadValue.innerText) - 10;
         let maxBead = Number(maxBeadValue.innerText) + 10;
@@ -252,7 +255,7 @@ $(document).ready(function() {
             maxBead = 125;
         }
 
-        let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}&colorAlgorithm=${selectedColorAlgorithm}&minBead=${minBead}&maxBead=${maxBead}`;
+        let url = `/uploadImages?wantsCrushed=${crushedBeadDetection}&wantsBubbles=${waterBubbleDetection}&colorAlgorithm=${selectedColorAlgorithm}&minBead=${minBead}&maxBead=${maxBead}`;
 
         console.log("URL: " + url);
         overlay.removeClass('d-none');
