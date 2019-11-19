@@ -3,6 +3,7 @@ import os
 import csv
 import colorsys
 import cv2
+import coverage
 
 from lib.counting import *
 from lib.util import rgbToCmyk
@@ -808,4 +809,11 @@ class TestNonFunctionalRequirements(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    cov = coverage.Coverage(omit="./exp-env/*")
+    cov.start()
+    print('happening before', file=sys.stderr)
     unittest.main()
+    print('happening after', file=sys.stderr)
+    cov.stop()
+    cov.save()
+    cov.html_report()

@@ -103,8 +103,9 @@ class Counting:
                 elif(color[1] == 'bead'): # if the bead is a water bead, leave it out.
                     self.colorBeads.append(color)
                     result.append(color)
-                elif(detectionParams.wantsWaterBubbles):
-                    self.waterBeads.append(color)
+
+        if detectionParams.wantsWaterBubbles: 
+            self.GetWaterBubbles()
 
         if detectionParams.wantsCrushedBeads: # if the user wants to detect crushed beads.
             self.getCrushedBeads(cimg, detectionParams, houghConfig)
@@ -114,6 +115,59 @@ class Counting:
         cv2.imwrite(imagePath, cimg)
 
         return result
+
+
+    """
+    Description: a function that takes an image and finds the water bubbles in it
+    @return an array with x,y coordinates for the center of each water bubble and the size of the water bubble
+    """
+    def GetWaterBubbles(self):
+        # Read image
+        im = self.colorMap
+        #Create a white border around the image to detect partial water bubbles
+        bordered = cv2.copyMakeBorder(im, 5, 5, 5, 5, cv2.BORDER_CONSTANT, 255)
+        #Create a version of the image that makes values greater than a certain RGB value black, and those below white, then inverst it for blob detection
+        lower = np.array([0, 0, 0])
+        upper = np.array([120, 120, 120])
+        colormask = cv2.inRange(bordered, lower, upper)
+        (T, thresh) = cv2.threshold(colormask, 1, 255, cv2.THRESH_BINARY)
+
+        # Setup SimpleBlobDetector parameters
+        params = cv2.SimpleBlobDetector_Params()
+        # Change thresholds
+        params.minThreshold = 10
+        params.maxThreshold = 200
+        # Filter by Area.
+        params.filterByArea = True
+        params.minArea = 600
+        params.maxArea = 10000
+        # Filter by Circularity
+        params.filterByCircularity = False
+        params.minCircularity = .0
+        # Filter by Convexity
+        params.filterByConvexity = True
+        params.minConvexity = 0.90
+        # Filter by Inertia
+        params.filterByInertia = True
+        params.minInertiaRatio = 0.0
+
+        # Create a detector with the parameters
+        detector = cv2.SimpleBlobDetector_create(params)
+        # Detect blobs.
+        keypoints = detector.detect(thresh)
+
+        # Remove keypoint if on a colored bead, and adds the size of the bubble to the array.
+        NewKP = []
+        for keypoint in keypoints:
+            y = int(keypoint.pt[0])
+            x = int(keypoint.pt[1])
+            radius = np.sqrt(keypoint.size / 3.1415)
+            if radius < 1:
+                radius = 1
+            BGRValue = im[x - 3, y - 3]
+            if BGRValue[2] >= 50 and BGRValue[1] >= 50 and BGRValue[0] >= 50:
+                self.waterBeads.append([[0, 0, 0], 'waterBead', [y, x, 30]])
+
 
     def findCircles(self, detectionParams, houghConfig):
         img = self.grayScaleMap
@@ -206,6 +260,7 @@ class Counting:
         # takes the known objects (beads and water beads) and colors them black
         # so they can be ignored when detecting the crushed beads
         for bead in objects:
+            bead[2][2] = int(round(bead[2][2]))
             cv2.circle(mask, (bead[2][0],bead[2][1]), bead[2][2], (0,0,0), -1)
             cv2.circle(mask, (bead[2][0],bead[2][1]), bead[2][2], (0,0,0), 16)
 
@@ -263,45 +318,6 @@ class Counting:
             return True
         else:
             return False
-
-    def getBrightestColor(self, circleInfo):
-        img = self.colorMap
-        imgY = img.shape[0]
-        imgX = img.shape[1]
-        x = circleInfo[0]
-        y = circleInfo[1]
-        radius = circleInfo[2]
-        reds, greens, blues = [], [], []
-
-        points = self.getPointsInCircle(radius, x, y)
-        colorsList = []
-        coordinates = list(points)
-
-        for xCoord, yCoord in coordinates:
-            if (xCoord >= imgX) or (yCoord >= imgY):
-                pass
-            else:
-                bgrValue = img[yCoord, xCoord]
-                RGB = ( bgrValue[2], bgrValue[1], bgrValue[0] )
-                colorsList.append(RGB)
-
-        sortedByRed = sorted(colorsList, key=lambda tup: tup[0], reverse=True)
-        sortedByGreen = sorted(colorsList, key=lambda tup: tup[1], reverse=True)
-        sortedByBlue = sorted(colorsList, key=lambda tup: tup[2], reverse=True)
-
-        # may need to be adjusted
-        tenPercent = math.floor(0.10 * len(colorsList))
-
-        for i in range(0, tenPercent):
-            reds.append(sortedByRed[i][0])
-            greens.append(sortedByGreen[i][1])
-            blues.append(sortedByBlue[i][2])
-
-        average = (round(np.mean(reds), 2), round(np.mean(greens), 2), round(np.mean(blues), 2))
-        isWater = self.isWater(average)
-        type = 'waterBead' if isWater else 'bead'
-        return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
-
 
     def getAverageColor(self, circleInfo):
         img = self.colorMap
