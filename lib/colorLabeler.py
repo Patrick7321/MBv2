@@ -1,3 +1,10 @@
+"""
+author: Adrian Rosebrock
+github: https://github.com/jrosebr1
+code borrowed from https://www.pyimagesearch.com/2016/02/15/determining-object-color-with-opencv/
+Parts of the code from this tutorial have been borrowed to detect the closest color of an object.
+This code/idea is in no way created by me and all credit should be given to Adrian Rosebrock.
+"""
 import cv2
 import numpy as np
 from collections import OrderedDict
