@@ -40,15 +40,15 @@ class Parameters():
     def __init__(self):
         self.wantsCrushedBeads = False
         self.wantsWaterBubbles = False
-        self.detectionAlgorithm = ''
-        self.magnificationLevel = ''
+        self.detectionAlgorithm = 'avg'
+        self.magnificationLevel = '4x'
         
         self.minDist = 10
         self.sensitivity = 50
         self.minRadius = 50
         self.maxRadius = 120
 
-detectionParams = Parameters()
+paramDict = {} 
 
 countingDict = {} # global counting dictionary variable for regeneration of csv data. keys are timestamp directory names
 
@@ -70,23 +70,25 @@ def error():
 @app.route('/uploadImages', methods=["POST"])
 def uploadImagesAndConfigure():
 
-    detectionParams.wantsCrushedBeads = True if request.args['wantsCrushed'] == 'true' else False # convert js 'bool' to python Bool
-    detectionParams.wantsWaterBubbles = True if request.args['wantsBubbles'] == 'true' else False
-    detectionParams.detectionAlgorithm = request.args['colorAlgorithm']
-    detectionParams.minRadius = int(request.args['minBead'])
-    detectionParams.maxRadius = int(request.args['maxBead'])
-    
+    newDir = file_util.createUploadDir()
 
+    timestamp = newDir.split("/")[3]
+
+    paramDict[timestamp] = Parameters()
+    paramDict[timestamp].wantsCrushedBeads = True if request.args['wantsCrushed'] == 'true' else False # convert js 'bool' to python Bool
+    paramDict[timestamp].wantsWaterBubbles = True if request.args['wantsBubbles'] == 'true' else False
+    paramDict[timestamp].detectionAlgorithm = request.args['colorAlgorithm']
+    paramDict[timestamp].minRadius = int(request.args['minBead'])
+    paramDict[timestamp].maxRadius = int(request.args['maxBead'])
+    
     if 'maglevel' in request.args:
-        detectionParams.magnificationLevel = request.args['maglevel']
+        paramDict[timestamp].magnificationLevel = request.args['maglevel']
 
     images = request.files.getlist("images")
 
-    newDir = file_util.createUploadDir()
     if not file_util.checkImagesAndSaveToDirectory(images, newDir):
         return jsonify({"status": 1, "msg": "One or more of the images that were uploaded are in the incorrect format. Accepted formats: " \
                          + (", ".join(file_util.ALLOWED_IMAGE_EXTENSIONS))})
-
 
     return jsonify({"status": 0, "msg": "Success","location": newDir.replace("Server/resources/uploads","")}) # redirect to homepage
 
@@ -110,34 +112,53 @@ def getStitchedImage(stitchDirectory):
 @app.route('/getResults/<path:directory>')
 def getResults(directory):
 
+    resultsDirectory = directory.split("/")[0]
+
+    countingParameters = Parameters()
+    if resultsDirectory in paramDict:
+        countingParameters = paramDict[resultsDirectory]
+    else: 
+        paramDict[resultsDirectory] = countingParameters
+
     magLevel = ''
-    if request.args.get('maglevel') == '4x' or detectionParams.magnificationLevel == '4x':
+    if request.args.get('maglevel') == '4x' or countingParameters.magnificationLevel == '4x':
         magLevel = HoughConfig.OBJX4
     else:
         magLevel = HoughConfig.OBJX10
 
-    resultsDirectory = directory.split("/")[0]
     serverDirectory = 'Server/resources/uploads/' + directory
     countingDict[resultsDirectory] = Counting(serverDirectory) # save the counting object in a dictionary for regeneration of report data
-    colorBeads = countingDict[resultsDirectory].getColorBeads(magLevel, detectionParams)
+
+    colorBeads = countingDict[resultsDirectory].getColorBeads(magLevel, countingParameters)
 
     return render_template('results.html', colorBeads = colorBeads, waterBeads = countingDict[resultsDirectory].waterBeads,
         crushedBeads = countingDict[resultsDirectory].crushedBeads, mapLocation = directory, resultsDirectory = resultsDirectory, 
-                minDist = detectionParams.minDist,
-                sensitivity = detectionParams.sensitivity,
-                minRadius = detectionParams.minRadius,
-                maxRadius = detectionParams.maxRadius
+                minDist = countingParameters.minDist,
+                sensitivity = countingParameters.sensitivity,
+                minRadius = countingParameters.minRadius,
+                maxRadius = countingParameters.maxRadius
         )
 
 @app.route('/setParameters', methods=['POST'])
 def setParameters():
     try:
         jsonData = request.get_json()
-        detectionParams.minDist = int(jsonData['minDist'])
-        detectionParams.sensitivity = int(jsonData['sensitivity'])
-        detectionParams.minRadius = int(jsonData['minRadius'])
-        detectionParams.maxRadius = int(jsonData['maxRadius'])
+
+        timestamp = jsonData['timestamp']
+
+        countingParameters = Parameters()
+        if timestamp in paramDict:
+            countingParameters = paramDict[timestamp]
+        else: 
+            paramDict[timestamp] = countingParameters
+
+        countingParameters.minDist = int(jsonData['minDist'])
+        countingParameters.sensitivity = int(jsonData['sensitivity'])
+        countingParameters.minRadius = int(jsonData['minRadius'])
+        countingParameters.maxRadius = int(jsonData['maxRadius'])
+
         return jsonify({'status': 0, 'statusString': 'Parameters successfully set'})
+
     except Exception as e: 
         return jsonify({'status': 1, 'statusString': 'An Error occurred setting parameters'})
 

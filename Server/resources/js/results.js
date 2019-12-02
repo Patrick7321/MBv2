@@ -86,6 +86,7 @@ $(window).ready(function(){
 		const method = 'POST';
 
 		const data = {
+			timestamp: resDir,
 			minDist: Number(minDistSlider.value),
 			sensitivity: Number(sensSlider.value),
 			minRadius: Number(minSizeSlider.value),
