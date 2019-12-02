@@ -247,7 +247,7 @@ class Counting:
                 if M['m00'] > 0:
                     cX = int((M["m10"] / M["m00"]))
                     cY = int((M["m01"] / M["m00"]))
-                    if cX >= imageX - 50 or cY >= imageY - 50:
+                    if cX >= imageX - 50 or cY >= imageY - 50 or cX <= 50 or cY <= 50:
                         pass
                     else:
                         self.crushedBeads.append([[0, 0, 0], 'crushedBead', [cX, cY, 35]])
