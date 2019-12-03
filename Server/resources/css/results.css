@@ -11,3 +11,34 @@
     display: block;
     margin: auto;
 }
+
+/* Tooltip container */
+.result-tooltip {
+    position: relative;
+    display: inline-block;
+  }
+  
+  /* Tooltip text */
+  .result-tooltip .tooltiptext {
+    visibility: hidden;
+    width: 240px;
+    background-color: black;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 6px;
+   
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+  }
+  
+  /* Show the tooltip text when you mouse over the tooltip container */
+  .result-tooltip:hover .tooltiptext {
+    visibility: visible;
+  }
+
+  .tooltip-header {
+    text-align: center;
+    display: block;
+    margin-bottom: .5em;
+  }

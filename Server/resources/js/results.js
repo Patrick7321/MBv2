@@ -72,11 +72,23 @@ $(window).ready(function(){
 	};
 
 	minSizeSlider.oninput = function() {
-		minSizeValue.textContent = minSizeSlider.value;
+		let minValue = Number(this.value);
+		let maxValue = Number(maxSizeSlider.value);
+		if (minValue <= maxValue) {
+			minSizeValue.textContent = minSizeSlider.value;
+		} else {
+			this.value = maxValue;
+		} 
 	};
 
 	maxSizeSlider.oninput = function() {
-		maxSizeValue.textContent = maxSizeSlider.value;
+		let minValue = Number(minSizeSlider.value);
+		let maxValue = Number(this.value);
+		if (minValue <= maxValue) {
+			maxSizeValue.textContent = maxSizeSlider.value;
+		} else {
+			this.value = minValue;
+		} 
 	};
 
 	recountButton.onclick = function() {
@@ -86,6 +98,7 @@ $(window).ready(function(){
 		const method = 'POST';
 
 		const data = {
+			timestamp: resDir,
 			minDist: Number(minDistSlider.value),
 			sensitivity: Number(sensSlider.value),
 			minRadius: Number(minSizeSlider.value),
@@ -245,7 +258,8 @@ $(window).ready(function(){
 		blueCount = 0,
 		magentaCount = 0,
 		crushedBeadCount = beads.crushedBeads.length,
-		countedString = `There were `;
+		waterBubbleCount = beads.waterBeads.length,
+		countedString = `Found `;
 
 	beads.colorBeads.forEach(function(circle){
 		red.push(circle[0][0]);
@@ -271,22 +285,17 @@ $(window).ready(function(){
 	});
 
 
-	if(yellowCount>0)
-		countedString += `${yellowCount} yellow beads, `;
-	if(redCount>0)
-		countedString += `${redCount} red beads, `;
-	if(greenCount>0)
-		countedString += `${greenCount} green beads, `;
-	if(cyanCount>0)
-		countedString += `${cyanCount} cyan beads, `;
-	if(blueCount>0)
-		countedString += `${blueCount} blue beads, `;
-	if(magentaCount>0)
-		countedString += `${magentaCount} magenta beads, `;
+	
 	if (crushedBeadCount > 0) {
-		countedString += `${crushedBeadCount} crushed beads, `;
+		countedString += `${crushedBeadCount} crushed bead(s), `;
+		if(waterBubbleCount > 0) {
+			countedString += `and ${waterBubbleCount} water bead(s). `
+		}
+	} else if(waterBubbleCount > 0) {
+		countedString += `${waterBubbleCount} water bead(s). `
 	}
-	countedString += `and ${beads.waterBeads.length} water beads. ${beads.colorBeads.length} total beads detected.`;
+	
+	countedString += ` ${beads.colorBeads.length} total beads detected.`;
 
 	document.getElementById('CountDiv').innerText = countedString;
 

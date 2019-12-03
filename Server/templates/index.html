@@ -82,6 +82,13 @@ SOFTWARE. -->
                                     <span class="slider round"></span>
                                 </label>
                                 <span class='toggle-label'>Water Bubble Detection</span>
+                                <div class="result-tooltip">
+                                    <img src='/resources/imgs/tooltip.png' height=30 width=30/>
+                                    <span class="tooltiptext">
+                                        <span class='tooltip-header'>Water Bubble Detection</span>
+                                        A toggle that will control whether water bubbles are detected and shown on the results page
+                                    </span>
+                                </div>
                             </div>
 
                             <!-- Toggle for Crushed Beads -->
@@ -91,20 +98,17 @@ SOFTWARE. -->
                                     <span class="slider round"></span>
                                 </label>
                                 <span class='toggle-label'>Crushed Bead Detection</span>
+                                <div class="result-tooltip">
+                                    <img src='/resources/imgs/tooltip.png' height=30 width=30/>
+                                    <span class="tooltiptext">
+                                        <span class='tooltip-header'>Crushed Bead Detection</span>
+                                        A toggle that will control whether crushed beads are detected and shown on the results page
+                                    </span>
+                                </div>
                             </div>
 
                             <!-- Dropdown for Color Algorithm selection -->
                             <div class='row setting-row extra-margin-left'>
-                                <!--<div class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Bead Color Algorithm
-                                    </button>
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        <a class="dropdown-item" href="#">4 Corners</a>
-                                        <a class="dropdown-item" href="#">Middle 10%</a>
-                                        <a class="dropdown-item" href="#">Something else here</a>
-                                    </div>
-                                </div> -->
                                 <div class='col-6'>
                                     <select class="form-control" id="color-algorithm-selection">
                                         <option value="avg">Average</option>
@@ -114,14 +118,29 @@ SOFTWARE. -->
                                     </select>
                                 </div>
                                 <span class='select-label'>Color Detection Algorithm</span>
+                                <div class="result-tooltip">
+                                    <img src='/resources/imgs/tooltip.png' height=30 width=30/>
+                                    <span class="tooltiptext">
+                                        <span class='tooltip-header'>Color Algorithm</span>
+                                        Controls which algorithm is used to detect the color of beads. 
+                                        Different algorithms work well in different situations.
+                                    </span>
+                                </div>
                             </div>
 
                             <!-- Sliders for minimum and maximum bead sizes -->
                             <div class='row setting-row'>
-                                    <div class='col-3'>
+                                    <div class='col-4'>
                                         <span>Min Radius</span>
+                                        <div class="result-tooltip">
+                                            <img src='/resources/imgs/tooltip.png' height=30 width=30/>
+                                            <span class="tooltiptext">
+                                                <span class='tooltip-header'>Minimum Radius</span>
+                                                Refers to how small the beads can be and still be detected by the system
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div class='col-6'>
+                                    <div class='col-5'>
                                         <div class="slidecontainer">
                                             <input type="range" min="0" max="125" value="30" class="slidebar" id="min-size-slider">
                                         </div>
@@ -132,10 +151,17 @@ SOFTWARE. -->
                             </div>
 
                             <div class='row'>
-                                <div class='col-3'>
+                                <div class='col-4'>
                                     <span>Max Radius</span>
+                                    <div class="result-tooltip">
+                                        <img src='/resources/imgs/tooltip.png' height=30 width=30/>
+                                        <span class="tooltiptext">
+                                            <span class='tooltip-header'>Maximum Radius</span>
+                                            Refers to how large the beads can be and still be detected by the system
+                                        </span>
+                                    </div>
                                 </div>
-                                <div class='col-6'>
+                                <div class='col-5'>
                                     <div class="slidecontainer">
                                         <input type="range" min="0" max="125" value="90" class="slidebar" id="max-size-slider">
                                     </div>
