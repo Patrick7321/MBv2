@@ -202,7 +202,7 @@ $(document).ready(function() {
         let maxBead = Number(maxBeadValue.innerText) + 10;
 
         if (minBead < 0) {
-            minBeadCircle = 0;
+            minBead = 0;
         }
         if (maxBead > 125) {
             maxBead = 125;
@@ -249,7 +249,7 @@ $(document).ready(function() {
         let maxBead = Number(maxBeadValue.innerText) + 10;
 
         if (minBead < 0) {
-            minBeadCircle = 0;
+            minBead = 0;
         }
         if (maxBead > 125) {
             maxBead = 125;
