@@ -320,14 +320,6 @@ class Counting:
 
         return contours
 
-    """
-        Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]
-                    and returns a list containing tuple with the bead's average RGB values of the top 10% and boolean isWater
-        @param circleInfo - array that contains a circle's x and y coordinates of the center and the radius of the circle
-        @param imageMap - a map (image) of the microscope images in color.
-        @return a list containing tuple with average RGB values of top 10% from bead, boolean isWater, and x,y,radius value of the bead.
-    """
-
     def checkPartial(self, circle):
         img = self.colorMap
         imgY = img.shape[0]
@@ -341,6 +333,12 @@ class Counting:
         else:
             return False
 
+    """
+        Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]
+                    and returns a list containing tuple with the bead's average RGB values of the pixels within that bead
+        @param circleInfo - array that contains a circle's x and y coordinates of the center and the radius of the circle
+        @return a list containing tuple with average RGB values of top 10% from bead, boolean isWater, and x,y,radius value of the bead.
+    """
     def getAverageColor(self, circleInfo):
         img = self.colorMap
         imgY = img.shape[0]
@@ -367,6 +365,12 @@ class Counting:
         type = 'waterBead' if isWater else 'bead'
         return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
 
+    """
+        Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]
+                    and returns a list containing tuple with the bead's average RGB values of the middle 10% of pixels withing the bead
+        @param circleInfo - array that contains a circle's x and y coordinates of the center and the radius of the circle
+        @return a list containing tuple with average RGB values of top 10% from bead, boolean isWater, and x,y,radius value of the bead.
+    """
     def getMiddleColor(self, circleInfo):
         img = self.colorMap
         imgY = img.shape[0]
@@ -393,7 +397,12 @@ class Counting:
         type = 'waterBead' if isWater else 'bead'
         return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
 
-
+    """
+        Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]
+                    and returns a list containing tuple with the bead's average RGB values of the radius average pixels within that bead
+        @param circleInfo - array that contains a circle's x and y coordinates of the center and the radius of the circle
+        @return a list containing tuple with average RGB values of top 10% from bead, boolean isWater, and x,y,radius value of the bead.
+    """
     def getRadiusAverageColor(self, circleInfo):
         img = self.colorMap
         imgY = img.shape[0]
@@ -417,7 +426,12 @@ class Counting:
         type = 'waterBead' if isWater else 'bead'
         return [[average[0],average[1],average[2]], type, [circleInfo[0],circleInfo[1],circleInfo[2]]] #[[R,G,B], isWater, [x,y,radius]]
 
-
+    """
+        Description: a function that takes an array representing a circle's[x-coord of center, y-coord of center, radius]
+                    and returns a list containing tuple with the bead's average RGB values of each of the four quadrants within the bead
+        @param circleInfo - array that contains a circle's x and y coordinates of the center and the radius of the circle
+        @return a list containing tuple with average RGB values of top 10% from bead, boolean isWater, and x,y,radius value of the bead.
+    """
     def getFourQuadrantColor(self, circleInfo):
         img = self.colorMap
         imgY = img.shape[0]

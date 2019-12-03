@@ -21,8 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
+
 #Requirements in this file: 3.1.6, 3.2.4, 3.2.6
 #Authors: Noah Zeilmann, Josiah Carpenter
+
 #Authors: Alex Peters
 
 import cv2
@@ -49,8 +51,10 @@ class Stitching:
 		self.resultsDirectory = resultsDirectory
 		self.results = []
 
-	# method takes an array of cv2 images and stitches the ones that match, ignoring those that do not.
-	# returns a status and a status string
+	"""
+		Description: a method that stitches the images configured to this object
+		@return an opencv image of the stitched image
+	"""
 	def stitchImages_Default(self):
 
 		if(len(self.images) < 2):
@@ -83,6 +87,11 @@ class Stitching:
 		# and pass that directory into the file_util to recursively read all images from that dir
 		self.images = file_util.readImagesFromDirectory(self.sourceDirectory)
 
+	"""
+		Description: a setter for the object's directory path
+		@param path - a string that indicates the path to set in the object
+		@return void
+	"""
 	def setResultsDirectory(self,path):
 		self.resultsDirectory = path
 

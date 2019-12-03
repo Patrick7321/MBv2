@@ -24,6 +24,8 @@ SOFTWARE.
 #Requirements in this file: 3.1.2, 3.1.4, 3.1.5, 3.1.11, 3.2.7, 3.3.2
 #Authors: Jacob Wakefield, Noah Zeilmann, McKenna Gates, Liam Zay
 
+#Authors: Alex Peters, Gattlin Walker, Patrick Ayres
+
 from . import app
 import json
 from flask import render_template, send_from_directory, request, url_for, redirect, jsonify, send_file

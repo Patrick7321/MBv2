@@ -1,3 +1,29 @@
+'''
+MIT License
+
+Copyright (c) 2018 LiamZ96
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+'''
+
+#Authors: Alex Peters, Patrick Ayres
+
 import csv
 import colorsys
 
@@ -33,6 +59,12 @@ def makeBeadsCSV(filepath, colorFormat, colorBeads, crushedBeads, waterBeads):
         addCrushedBeads(writer, colorFormat, crushedBeads)
         addWaterBeads(writer, colorFormat, waterBeads)
 
+"""
+    Description: a function that writes the color data to CSV in RGB format
+    @param writer - the writer, preconfigured for the output file
+    @param colorBeads - an array containing bead data from scan
+    @return void
+"""
 def writeOutputRgb(writer, colorBeads): 
     i = 1
     for bead in colorBeads:
@@ -44,6 +76,12 @@ def writeOutputRgb(writer, colorBeads):
         writer.writerow([i, "Bead", r, g, b, x, y, radius]) # row is written with beadNum, r, g, b, x, y, radius
         i += 1
 
+"""
+    Description: a function that writes the color data to CSV in HSV format
+    @param writer - the writer, preconfigured for the output file
+    @param colorBeads - an array containing bead data from scan
+    @return void
+"""
 def writeOutputHsv(writer, colorBeads): 
     i = 1
     for bead in colorBeads: 
@@ -56,6 +94,12 @@ def writeOutputHsv(writer, colorBeads):
         writer.writerow([i, "Bead", h, s, v, x, y, radius]) # row is written with beadNum, h, s, v, x, y, radius
         i += 1
 
+"""
+    Description: a function that writes the color data to CSV in CMYK format
+    @param writer - the writer, preconfigured for the output file
+    @param colorBeads - an array containing bead data from scan
+    @return void
+"""
 def writeOutputCmyk(writer, colorBeads): 
     i = 1
     for bead in colorBeads: 
@@ -68,6 +112,12 @@ def writeOutputCmyk(writer, colorBeads):
         writer.writerow([i, "Bead", C, M, Y, K, x, y, radius]) # row is written with beadNum, c, m, y, k, x, y, radius
         i += 1
 
+"""
+    Description: a function that writes the color data to CSV in Grayscale format
+    @param writer - the writer, preconfigured for the output file
+    @param colorBeads - an array containing bead data from scan
+    @return void
+"""
 def writeOutputGrayscale(writer, colorBeads):
     i = 1
     for bead in colorBeads:
@@ -79,13 +129,21 @@ def writeOutputGrayscale(writer, colorBeads):
         writer.writerow([i, "Bead",  grayscaleValue, x, y, radius]) # row is written with beadNum, grayscaleValue, x, y, radius
         i += 1
 
+"""
+    Description: a function that sums the values in a list
+    @param lst - the list to average
+    @return the average of values in the list
+"""
 def listAverage(lst): 
     return sum(lst) / len(lst)
 
-# TODO: am i allowed to use this code? i copy/pasted it from stack overflow, 
-# more specifically: 
-# https://stackoverflow.com/questions/14088375/how-can-i-convert-rgb-to-cmyk-and-vice-versa-in-python/30078860
-# how do i give the author credit?
+"""
+    Description: a function that takes an r, g, and b value and returns the corresponding CMYK values
+    @param r - an int representing red 
+    @param g - an int representing green
+    @param b - an int representing blue
+    @return a tuple of length four representing (C, M, Y, K) values
+"""
 def rgbToCmyk(r,g,b):
     cmyk_scale = 100
 
@@ -107,6 +165,13 @@ def rgbToCmyk(r,g,b):
     # rescale to the range [0,cmyk_scale]
     return c*cmyk_scale, m*cmyk_scale, y*cmyk_scale, k*cmyk_scale
 
+"""
+    Description: a function that writes detected crushed beads to the output file
+    @param writer - the writer, preconfigured for the output file
+    @param colorFormat - a string representing the selected color format
+    @param crushedBeads - a list of detected crushed beads during detection
+    @return void
+"""
 def addCrushedBeads(writer, colorFormat, crushedBeads):
 
     for bead in crushedBeads:
@@ -122,6 +187,13 @@ def addCrushedBeads(writer, colorFormat, crushedBeads):
         elif colorFormat == 'rgb':
             writer.writerow(["N/A", "Crushed Bead", "N/A", "N/A", "N/A", x, y, r])
 
+"""
+    Description: a function that writes detected water bubbles to the output file
+    @param writer - the writer, preconfigured for the output file
+    @param colorFormat - a string representing the selected color format
+    @param crushedBeads - a list of detected water bubbles during detection
+    @return void
+"""
 def addWaterBeads(writer, colorFormat, waterBeads):
     
     for bead in waterBeads:
