@@ -24,6 +24,8 @@ SOFTWARE.
 #Requirements in this file: 3.1.7, 3.1.8, 3.1.9, 3.1.10, 3.2.4, 3.2.5, 3.3.1
 #Authors: Jacob Wakefield, McKenna Gates
 
+#Authors: Patrick Ayres, Gattlin Walker, Alex Peters, Robbie Cichon
+
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
@@ -37,7 +39,7 @@ import datetime
 from enum import Enum
 from os import listdir, path
 from . import util
-from . import colorLabeler
+from lib.colorLabeler import getClosestColor, validColor
 
 """
     Description: an enum class to handle the HoughCircle configuration values that are used in cv2.HoughCircles().
@@ -244,13 +246,12 @@ class Counting:
         self.__removeImgAspect(lab, minBorder, maxBorder, drawing=color)
 
         contours = self.__findContours(color)
-        cl = colorLabeler.ColorLabeler()
 
         imageY = image.shape[0]
         imageX = image.shape[1]
         for c in contours:
-            color_label = cl.label(self.labMap, c)
-            if color_label not in cl.colorsToIgnore:
+            colorLabel = getClosestColor(self.labMap, c)
+            if validColor(colorLabel):
                 M = cv2.moments(c)
                 if M['m00'] > 0:
                     cX = int((M["m10"] / M["m00"]))
@@ -312,9 +313,10 @@ class Counting:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blur = cv2.GaussianBlur(gray, (31, 31), 0)
         thresh = cv2.threshold(blur, 225, 255, cv2.THRESH_BINARY_INV)[1]
-        kernel = np.ones((5,5),np.uint8)
-        erosion = cv2.erode(thresh,kernel,iterations = 1)
+        erosion = cv2.erode(thresh, None, iterations=4)
         imgOutput, contours, hierarchy = cv2.findContours(erosion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        gray = blur = thresh = erosion = None
 
         return contours
 

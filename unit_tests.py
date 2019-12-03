@@ -1,3 +1,27 @@
+'''
+MIT License
+
+Copyright (c) 2018 LiamZ96
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+'''
+#Authors: Gattlin Walker, Patrick Ayres, Alex Peters
 import unittest
 import os
 import csv
@@ -106,14 +130,15 @@ class TestCrushedBeads(unittest.TestCase):
         cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
 
         self.test_params.wantsCrushedBeads = True
-        self.test_params.minRadius = 0
-        self.test_params.maxRadius = 125
+        self.test_params.minRadius = 55
+        self.test_params.maxRadius = 100
+        self.test_params.minRadius = 35
         self.test_params.detectionAlgorithm = "mid"
 
         test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX10.value)
 
         crushedCount = len(test_count.crushedBeads)
-        self.assertEqual(crushedCount, 1)
+        self.assertEqual(crushedCount, 2)
 
     #FR. 2-2
     def test_no_crushed_beads(self):
@@ -143,7 +168,7 @@ class TestCrushedBeads(unittest.TestCase):
         test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX4.value)
 
         crushedCount = len(test_count.crushedBeads)
-        self.assertEqual(crushedCount, 5)
+        self.assertEqual(crushedCount, 4)
 
     #FR. 2-4
     def test_crushed_bead_off_with_crushed(self):
@@ -178,16 +203,16 @@ class TestCrushedBeads(unittest.TestCase):
     # the detection results
     def test_crushed_bead_with_stitched_image(self):
         test_count = Counting('test/test_crushed_bead_directory/maps/stitched_map.jpg')
-        cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
 
         self.test_params.beadUpperBound = 20;
         self.test_params.beadLowerBound = 60;
         self.test_params.detectionAlgorithm = "mid"
         self.test_params.wantsCrushedBeads = True
+        self.test_params.wantsWaterBubbles = True
         self.test_params.sensitivity = 50
         self.test_params.minRadius = 20
 
-        test_count.getCrushedBeads(cimg, self.test_params, HoughConfig.OBJX4.value)
+        test_count.getColorBeads(HoughConfig.OBJX4, self.test_params)
 
         crushedCount = len(test_count.crushedBeads)
         self.assertEqual(crushedCount, 5)
@@ -412,8 +437,8 @@ class TestPartialBead(unittest.TestCase):
         self.test_params.detectionAlgorithm = "mid"
         beads = self.test_count.getColorBeads(HoughConfig.DEFAULT, self.test_params)
         self.assertEqual(len(beads), 6)
-        
-    
+
+
     #FR. 4-2
     def test_no_partial_beads(self):
         self.test_count = Counting('test/test_bead_size_directory/maps/result_default.jpg')
@@ -435,7 +460,7 @@ class TestPartialBead(unittest.TestCase):
         beads = self.test_count.getColorBeads(HoughConfig.DEFAULT, self.test_params)
         actual_count = 67
         self.assertTrue(len(beads) >= round(actual_count * self.MARGIN_OF_ERROR) and len(beads) <= round(actual_count / self.MARGIN_OF_ERROR))
-    
+
     #FR. 4-4
     def test_partial_bead_true_edge_major_majority(self):
         pass
@@ -470,7 +495,7 @@ class TestCSV(unittest.TestCase):
 
     def setUp(self):
         self.test_params = Parameters()
-        
+
     #FR. 5-1
     def test_csv_rows(self):
         self.test_count = Counting('test/test_csv_directory/maps/result_default.jpg')
@@ -499,7 +524,7 @@ class TestCSV(unittest.TestCase):
         csv_file.close()
         os.remove('test/test_csv_directory/results/rgb_' + file_timestamp + '.csv')
         self.assertEqual(row_count, len(beads) + 1)
-    
+
     #FR. 5-3
     def test_rgb_csv(self):
         self.test_count = Counting('test/test_csv_directory/maps/result_default.jpg')
@@ -519,12 +544,12 @@ class TestCSV(unittest.TestCase):
 
             if(bead_color != file_color):
                 correct_file = False
-        
-    
+
+
         csv_file.close()
         os.remove('test/test_csv_directory/results/rgb_' + file_timestamp + '.csv')
         self.assertTrue(correct_file)
-        
+
     #FR. 5-4
     def test_hsv_csv(self):
         self.test_count = Counting('test/test_csv_directory/maps/result_default.jpg')
@@ -545,12 +570,12 @@ class TestCSV(unittest.TestCase):
 
             if(hsv != file_color):
                 correct_file = False
-        
-    
+
+
         csv_file.close()
         os.remove('test/test_csv_directory/results/hsv_' + file_timestamp + '.csv')
         self.assertTrue(correct_file)
-        
+
     #FR. 5-5
     def test_cmyk_csv(self):
         self.test_count = Counting('test/test_csv_directory/maps/result_default.jpg')
@@ -572,12 +597,12 @@ class TestCSV(unittest.TestCase):
 
             if(cmyk != file_color):
                 correct_file = False
-        
-    
+
+
         csv_file.close()
         os.remove('test/test_csv_directory/results/cmyk_' + file_timestamp + '.csv')
         self.assertTrue(correct_file)
-        
+
     #FR. 5-6
     def test_grayscale_csv(self):
         self.test_count = Counting('test/test_csv_directory/maps/result_default.jpg')
@@ -598,8 +623,8 @@ class TestCSV(unittest.TestCase):
 
             if(grayscale != file_color):
                 correct_file = False
-        
-    
+
+
         csv_file.close()
         os.remove('test/test_csv_directory/results/grayscale_' + file_timestamp + '.csv')
         self.assertTrue(correct_file)
@@ -609,7 +634,7 @@ class TestCSV(unittest.TestCase):
         pass
 
 class TestColorAlgorithms(unittest.TestCase):
-        
+
     def setUp(self):
         self.test_count = Counting('test/test_color_algorithm_directory/maps/result_default.jpg')
         self.test_params = Parameters()
@@ -625,7 +650,7 @@ class TestColorAlgorithms(unittest.TestCase):
         img = self.test_count.grayScaleMap
         cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
         blur = cv2.GaussianBlur(img,(7,7),0)
-        
+
         circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,
                                     dp=1,
                                     minDist=self.test_params.minDist,
@@ -650,8 +675,8 @@ class TestColorAlgorithms(unittest.TestCase):
 
         self.assertTrue(correct_color)
 
-        
-        
+
+
     #FR. 6-2
     def test_average_color_algorithm(self):
         self.test_params.maxRadius = 125
@@ -663,7 +688,7 @@ class TestColorAlgorithms(unittest.TestCase):
         img = self.test_count.grayScaleMap
         cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
         blur = cv2.GaussianBlur(img,(7,7),0)
-        
+
         circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,
                                     dp=1,
                                     minDist=self.test_params.minDist,
@@ -687,7 +712,7 @@ class TestColorAlgorithms(unittest.TestCase):
                 correct_color = False
 
         self.assertTrue(correct_color)
-        
+
     #FR. 6-3
     def test_middle_color_algorithm(self):
         self.test_params.maxRadius = 125
@@ -699,7 +724,7 @@ class TestColorAlgorithms(unittest.TestCase):
         img = self.test_count.grayScaleMap
         cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
         blur = cv2.GaussianBlur(img,(7,7),0)
-        
+
         circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,
                                     dp=1,
                                     minDist=self.test_params.minDist,
@@ -723,7 +748,7 @@ class TestColorAlgorithms(unittest.TestCase):
                 correct_color = False
 
         self.assertTrue(correct_color)
-        
+
     #FR. 6-4
     def test_radius_color_algorithm(self):
         self.test_params.maxRadius = 125
@@ -735,7 +760,7 @@ class TestColorAlgorithms(unittest.TestCase):
         img = self.test_count.grayScaleMap
         cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
         blur = cv2.GaussianBlur(img,(7,7),0)
-        
+
         circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,
                                     dp=1,
                                     minDist=self.test_params.minDist,
@@ -759,7 +784,7 @@ class TestColorAlgorithms(unittest.TestCase):
                 correct_color = False
 
         self.assertTrue(correct_color)
-       
+
     #FR. 6-5
     def test_four_corner_color_algorithm(self):
         self.test_params.maxRadius = 125
@@ -771,7 +796,7 @@ class TestColorAlgorithms(unittest.TestCase):
         img = self.test_count.grayScaleMap
         cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
         blur = cv2.GaussianBlur(img,(7,7),0)
-        
+
         circles = cv2.HoughCircles(blur,cv2.HOUGH_GRADIENT,
                                     dp=1,
                                     minDist=self.test_params.minDist,
