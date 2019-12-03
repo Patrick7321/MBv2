@@ -72,11 +72,23 @@ $(window).ready(function(){
 	};
 
 	minSizeSlider.oninput = function() {
-		minSizeValue.textContent = minSizeSlider.value;
+		let minValue = Number(this.value);
+		let maxValue = Number(maxSizeSlider.value);
+		if (minValue <= maxValue) {
+			minSizeValue.textContent = minSizeSlider.value;
+		} else {
+			this.value = maxValue;
+		} 
 	};
 
 	maxSizeSlider.oninput = function() {
-		maxSizeValue.textContent = maxSizeSlider.value;
+		let minValue = Number(minSizeSlider.value);
+		let maxValue = Number(this.value);
+		if (minValue <= maxValue) {
+			maxSizeValue.textContent = maxSizeSlider.value;
+		} else {
+			this.value = minValue;
+		} 
 	};
 
 	recountButton.onclick = function() {
