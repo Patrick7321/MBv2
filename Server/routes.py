@@ -54,21 +54,32 @@ paramDict = {}
 
 countingDict = {} # global counting dictionary variable for regeneration of csv data. keys are timestamp directory names
 
-# route for serving static resources (images/js/css)
+"""
+    Description: flask endpoint function for serving static resources
+"""
 @app.route('/resources/<path:path>')
 def sendStaticResource(path):
     return send_from_directory('resources', path)
 
+"""
+    Description: flask endpoint function for serving the page index
+"""
 @app.route('/')
 @app.route('/index')
 def index():
     return render_template('index.html')
 
+"""
+    Description: flask endpoint function for serving the error page
+"""
 @app.route('/error')
 def error():
     errorMessage = request.args['errorMessage']
     return render_template('error.html',error=errorMessage)
 
+"""
+    Description: flask endpoint function for POSTing images and configuration data to the server
+"""
 @app.route('/uploadImages', methods=["POST"])
 def uploadImagesAndConfigure():
 
@@ -94,7 +105,9 @@ def uploadImagesAndConfigure():
 
     return jsonify({"status": 0, "msg": "Success","location": newDir.replace("Server/resources/uploads","")}) # redirect to homepage
 
-# accepts a path to the image directory to use for stitching
+"""
+    Description: flask endpoint function for stitching the images uploaded
+"""
 @app.route('/getStitchedImage/<path:stitchDirectory>')
 def getStitchedImage(stitchDirectory):
 
@@ -107,10 +120,9 @@ def getStitchedImage(stitchDirectory):
     else:
         return render_template('stitched_single.html', status=status, statusString=statusString, directory=stitchDirectory)
 
-    #stitcher.twoRoundStitch(dirPrefix + directory + "/images/", dirPrefix + directory + "/maps/")
-    #return render_template('stitched.html', direct=directory)
-
-# accepts a path to the stitched image directory
+"""
+    Description: flask endpoint for calling bead count functions
+"""
 @app.route('/getResults/<path:directory>')
 def getResults(directory):
 
@@ -141,6 +153,9 @@ def getResults(directory):
                 maxRadius = countingParameters.maxRadius
         )
 
+"""
+    Description: flask endpoint for setting parameters, used in recount functionality ajax updates
+"""
 @app.route('/setParameters', methods=['POST'])
 def setParameters():
     try:
@@ -164,6 +179,9 @@ def setParameters():
     except Exception as e: 
         return jsonify({'status': 1, 'statusString': 'An Error occurred setting parameters'})
 
+"""
+    Description: flask endpoint for generating and downloading a .CSV file report for the user
+"""
 @app.route('/getResultReport/<path:directory>')
 def getResultReport(directory):
     colorOutputType = request.args.get('colorOutputType') # this is the type of output we want
