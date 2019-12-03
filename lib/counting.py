@@ -104,7 +104,7 @@ class Counting:
                     self.colorBeads.append(color)
                     result.append(color)
 
-        if detectionParams.wantsWaterBubbles: 
+        if detectionParams.wantsWaterBubbles:
             self.GetWaterBubbles()
 
         if detectionParams.wantsCrushedBeads: # if the user wants to detect crushed beads.
@@ -118,8 +118,8 @@ class Counting:
 
 
     """
-    Description: a function that takes an image and finds the water bubbles in it
-    @return an array with x,y coordinates for the center of each water bubble and the size of the water bubble
+        Description: a function that takes an image and finds the water bubbles in it
+        @return an array with x,y coordinates for the center of each water bubble and the size of the water bubble
     """
     def GetWaterBubbles(self):
         # Read image
@@ -169,6 +169,12 @@ class Counting:
                 self.waterBeads.append([[0, 0, 0], 'waterBead', [y, x, 30]])
 
 
+    """
+        Finds all circles in an image with the given parameters
+        @param detectionParams - detection parameters used for detecting the circles
+        @houghConfig - the hough config also used to detect the circles
+        @return - the found circles in the image.
+    """
     def findCircles(self, detectionParams, houghConfig):
         img = self.grayScaleMap
         blur = cv2.GaussianBlur(img,(7,7),0)
@@ -203,8 +209,10 @@ class Counting:
         return isWater
 
     """
-    Description: does preprocessing on the image map to find the crushed beads.
-    @param image - image that will have the final results of the counting
+        Description: does preprocessing on the image map to find the crushed beads.
+        @param image - image that will have the final results of the counting
+        @param detectionParams - detection parameters used for detecting the circles
+        @houghConfig - the hough config also used to detect the circles
     """
     def getCrushedBeads(self, image, detectionParams, houghConfig):
         circleInfo = []
@@ -254,6 +262,13 @@ class Counting:
                         cv2.drawContours(image, [c], -1, (255, 0, 0), 4)
                         cv2.circle(image, (cX, cY), 2, (255, 0, 0), 3)
 
+    """
+        Remove the pixels in a given range. Used to remove certain objects
+        from the image
+        @param image - original image
+        @param objects - detected objects that will be removed
+        @return - the final image with the removed objects
+    """
     def __removeObjects(self, image, objects):
         mask = np.ones(image.shape[:2], dtype="uint8")
 
@@ -269,13 +284,13 @@ class Counting:
         return color
 
     """
-    Description: Gets the locations of pixels within a given bound and colors
-    them white so they will not be picked up during image detection
-    @param img - the image used to find the pixels withing a given range
-    @param minBound - the lower bound of a pixel's color intensity
-    @param maxBound - the upper bound of a pixel's color intensity
-    @param drawing - an optional parameter in case the image the results need to be drawn on
-                     is different than the image the range detection was performed on.
+        Description: Gets the locations of pixels within a given bound and colors
+        them white so they will not be picked up during image detection
+        @param img - the image used to find the pixels withing a given range
+        @param minBound - the lower bound of a pixel's color intensity
+        @param maxBound - the upper bound of a pixel's color intensity
+        @param drawing - an optional parameter in case the image the results need to be drawn on
+                        is different than the image the range detection was performed on.
     """
     def __removeImgAspect(self, img, minBound, maxBound, drawing=None):
         # if no drawing image is given then it becomes the original img
@@ -288,6 +303,11 @@ class Counting:
         for c in contours:
             cv2.drawContours(drawing, [c], -1, (255, 255, 255), -1)
 
+    """
+        Finds the contours left in the image
+        @param image: image used to find the contours
+        @return: the contours found on the image
+    """
     def __findContours(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blur = cv2.GaussianBlur(gray, (31, 31), 0)
