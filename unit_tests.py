@@ -251,7 +251,7 @@ class TestCrushedBeads(unittest.TestCase):
         crushedCount = len(test_count.crushedBeads)
         self.assertEqual(crushedCount, 0)
 
-    #FR. 2-9  test/test_crushed_bead_directory/maps/stitched_no_crushed.jpg
+    #FR. 2-9
     def test_crushed_bead_with_stitched_image_no_crushed_beads(self):
         test_count = Counting('test/test_crushed_bead_directory/maps/stitched_no_crushed.jpg')
         cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
@@ -270,7 +270,7 @@ class TestCrushedBeads(unittest.TestCase):
 
     #FR. 2-10
     def test_crushed_beads_with_black_borders_and_edges_no_crushed_beads(self):
-        test_count = Counting('test/test_crushed_bead_directory/maps/stitched_and_borders_no_crushed.jpg')
+        test_count = Counting('test/test_crushed_bead_directory/maps/stitched_no_crushed.jpg')
         cimg = cv2.cvtColor(test_count.grayScaleMap, cv2.COLOR_GRAY2BGR)
 
         self.test_params.beadUpperBound = 20;
@@ -404,20 +404,6 @@ class TestWaterBubble(unittest.TestCase):
         beads = counter.getColorBeads(HoughConfig.OBJX10, self.test_params)
         self.assertEqual(len(counter.waterBeads), 0)
 
-    #FR. 3-6
-    #Error - Video
-
-    #FR. 3-7
-    #Error - Video
-
-    #FR. 3-8
-    #Error - Video
-
-    #FR. 3-9
-    #Error - Video
-
-    #FR. 3-10
-    #Error - Video
 
 class TestPartialBead(unittest.TestCase):
 
@@ -436,7 +422,7 @@ class TestPartialBead(unittest.TestCase):
         self.test_params.maxRadius = 125
         self.test_params.detectionAlgorithm = "mid"
         beads = self.test_count.getColorBeads(HoughConfig.DEFAULT, self.test_params)
-        self.assertEqual(len(beads), 6)
+        self.assertEqual(len(beads), 2)
 
 
     #FR. 4-2
