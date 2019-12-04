@@ -1,4 +1,5 @@
 __pycache__
+test/test_csv_directory/results/*.csv
 node_modules/
 Server/resources/uploads/*
 !Server/resources/uploads/git_placeholder.txt

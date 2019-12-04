@@ -24,6 +24,7 @@ SOFTWARE.
 
 //Requirements in this file: 3.2.1, 3.4.1.1
 //Authors: Jacob Wakefield, Noah Zeilmann, McKenna Gates
+//Authors: Alex Peters, Patrick Ayres, Gattlin Walker
 
 'use-strict'
 $(document).ready(function() {

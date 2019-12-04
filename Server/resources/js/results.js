@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 //Author: Luke Johnson
+//Authors: Alex Peters, Patrick Ayres, Gattlin Walker
 
 'use strict';
 
