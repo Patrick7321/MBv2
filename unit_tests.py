@@ -449,15 +449,36 @@ class TestPartialBead(unittest.TestCase):
 
     #FR. 4-4
     def test_partial_bead_true_edge_major_majority(self):
-        pass
+        self.test_count = Counting('test/test_partial_bead_directory/true_major_majority/maps/result_default.jpg')
+        self.test_params.minDist = 40
+        self.test_params.sensitivity = 40
+        self.test_params.minRadius = 50
+        self.test_params.maxRadius = 125
+        self.test_params.detectionAlgorithm = "mid"
+        beads = self.test_count.getColorBeads(HoughConfig.DEFAULT, self.test_params)
+        self.assertEqual(len(beads), 3)
 
     #FR. 4-5
     def test_partial_bead_true_edge_minor_majority(self):
-        pass
+        self.test_count = Counting('test/test_partial_bead_directory/true_minor_majority/maps/result_default.jpg')
+        self.test_params.minDist = 40
+        self.test_params.sensitivity = 40
+        self.test_params.minRadius = 50
+        self.test_params.maxRadius = 125
+        self.test_params.detectionAlgorithm = "mid"
+        beads = self.test_count.getColorBeads(HoughConfig.DEFAULT, self.test_params)
+        self.assertEqual(len(beads), 3)
 
     #FR. 4-6
     def test_partial_bead_true_edge_minority(self):
-        pass
+        self.test_count = Counting('test/test_partial_bead_directory/true_minority/maps/result_default.jpg')
+        self.test_params.minDist = 50
+        self.test_params.sensitivity = 40
+        self.test_params.minRadius = 50
+        self.test_params.maxRadius = 125
+        self.test_params.detectionAlgorithm = "mid"
+        beads = self.test_count.getColorBeads(HoughConfig.DEFAULT, self.test_params)
+        self.assertEqual(len(beads), 2)
 
     #FR. 4-7
     def test_partial_bead_false_top_right_edge(self):
@@ -820,11 +841,4 @@ class TestNonFunctionalRequirements(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    cov = coverage.Coverage(omit="./exp-env/*")
-    cov.start()
-    print('happening before', file=sys.stderr)
     unittest.main()
-    print('happening after', file=sys.stderr)
-    cov.stop()
-    cov.save()
-    cov.html_report()
